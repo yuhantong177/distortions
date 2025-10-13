@@ -7,7 +7,7 @@ from distutils.util import strtobool
 from matplotlib import pyplot as plt, cm
 import argparse
 
-from misc.tools import compute_score, apply_distortion
+from src.misc.tools import compute_score, apply_distortion
 from ang.write_core_ang import Ang
 from ang.phase import Phase
 

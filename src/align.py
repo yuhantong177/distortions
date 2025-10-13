@@ -4,7 +4,7 @@ import json
 import numpy as np
 
 from matplotlib import pyplot as plt, cm
-from misc.tools import Aligner, compute_score
+from src.misc.tools import Aligner, compute_score
 import argparse
 
 
