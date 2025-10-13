@@ -4,7 +4,7 @@ import json
 import numpy as np
 
 from matplotlib import pyplot as plt, cm
-from misc.tools import Aligner, compute_score
+from src.misc.tools import Aligner, compute_score
 import argparse
 
 
@@ -27,6 +27,10 @@ def __main__(args=None):
         parser.add_argument("-id_xp", type=int, default=0, help="Define the xp id to save the results")
 
         args = parser.parse_args()
+
+    # Ensure output folders exist before attempting to write images later on.
+    os.makedirs(args.align_dir, exist_ok=True)
+    os.makedirs(args.out_dir, exist_ok=True)
 
     # Load configuration
     with open(args.conf_path, "r") as conf_file:

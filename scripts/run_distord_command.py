@@ -1,0 +1,66 @@
+"""Helper script to launch the distortion step from an IDE.
+
+Edit the path constants below so they point to your dataset, then run the
+module from your IDE or a terminal (``python scripts/run_distord_command.py``).
+The script simply forwards the call to ``python -m src.distord`` using the same
+interpreter that executed the file, which guarantees the package imports resolve
+correctly as long as you start it from inside the repository.
+"""
+
+from __future__ import annotations
+
+import subprocess
+import sys
+from pathlib import Path
+
+
+def main() -> None:
+    repo_root = Path(__file__).resolve().parent.parent
+
+    seg_ref_path = repo_root / "data/AM718/segment.align/segment.align.0.png"
+    ebsd_ref_path = repo_root / "data/AM718/ebsd/AM718_ebsd.jpg"
+    ang_ref_path = repo_root / "data/AM718/ang/AM718.ang"
+    out_dir = repo_root / "data/AM718/out"
+    # The distortion step does not take the JSON configuration used by align.py,
+    # but keeping the path documented here makes it easier to see which project
+    # we are working with when editing the script.
+    config_path = repo_root / "conf/AM718.align.conf"
+    xp_id = 0
+    mesh_step = 65
+    mesh_std = 5
+    num_sampling = 200
+    polynom = 3
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    command = [
+        sys.executable,
+        "-m",
+        "src.distord",
+        "-seg_ref_path",
+        str(seg_ref_path),
+        "-ebsd_ref_path",
+        str(ebsd_ref_path),
+        "-ang_ref_path",
+        str(ang_ref_path),
+        "-out_dir",
+        str(out_dir),
+        "-id_xp",
+        str(xp_id),
+        "-mesh_step",
+        str(mesh_step),
+        "-mesh_std",
+        str(mesh_std),
+        "-num_sampling",
+        str(num_sampling),
+        "-polynom",
+        str(polynom),
+    ]
+
+    print(f"Configuration template: {config_path}")
+    print("Running:", " ".join(command))
+    subprocess.run(command, check=True)
+
+
+if __name__ == "__main__":
+    main()
