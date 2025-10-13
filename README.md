@@ -183,6 +183,7 @@ captures the output from `python -m src.distord`. When the subprocess fails
 (for example because `numpy` or `opencv` is missing), the script surfaces the
 stdout/stderr streams so you can immediately see which dependency has to be
 installed.
+
    
 
 ## Acknowledgement:
