@@ -27,11 +27,19 @@ This repository provides the code to undistord EBSD data (.ang format) based on 
 <img src="https://raw.githubusercontent.com/MLmicroscopy/distortions/master/Ti64comparison_horizontal.png" alt="drawing" style="width:400px;"/>
 
 ## Dependencies:
-This works on python3 (not tested on python2). You need to install the following packages
- - sklean
- - skimage
- - cma
- - opencv (will be removed)
+This works on python3 (not tested on python2). Install the following packages before
+running the tools:
+
+- numpy
+- scikit-learn
+- scikit-image
+- cma
+- opencv-python (or opencv-python-headless)
+- matplotlib
+- pandas
+
+`pip install numpy scikit-learn scikit-image cma opencv-python-headless matplotlib pandas`
+will install every requirement in one step.
  
 ## Pipeline
 
@@ -116,7 +124,7 @@ $> python3 distord.py \
         -ebsd_ref_path ../data/AM718/ebsd/AM718_ebsd.jpg
         -ang_ref_path ../data/AM718/ang/AM718.ang
         -out_dir ../data/AM718/out
-        -conf_path ../conf/AM718.align.conf
+        -conf_path ../conf/AM718.align.conf  # optional, kept for backwards compatibility
         -xp_id 0
 ```
 Note: Do not forget to unzip the file data/AM718/ang/AM718.zip !
@@ -165,6 +173,17 @@ The command above creates `data/AM718/out_demo` (and the sub-directory
 `aligned/`) to store the intermediate alignment, the warped EBSD image, the
 mesh visualisation, and the JSON files describing the affine and polynomial
 transformations.
+
+### Running the distortion step from an IDE
+
+If you prefer editing the file paths and launching the process from an IDE,
+open `scripts/run_distord_command.py`, adjust the constants at the top of the
+file, and execute it. The helper prints the exact command-line invocation and
+captures the output from `python -m src.distord`. When the subprocess fails
+(for example because `numpy` or `opencv` is missing), the script surfaces the
+stdout/stderr streams so you can immediately see which dependency has to be
+installed.
+
    
 
 ## Acknowledgement:

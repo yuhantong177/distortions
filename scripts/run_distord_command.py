@@ -59,7 +59,26 @@ def main() -> None:
 
     print(f"Configuration template: {config_path}")
     print("Running:", " ".join(command))
-    subprocess.run(command, check=True)
+
+    result = subprocess.run(
+        command,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    if result.stdout:
+        print(result.stdout)
+
+    if result.stderr:
+        print(result.stderr, file=sys.stderr)
+
+    if result.returncode != 0:
+        raise SystemExit(
+            "distord failed. Review the error output above (missing Python "
+            "packages such as numpy/opencv is the most common cause)."
+        )
+
 
 
 if __name__ == "__main__":

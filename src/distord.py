@@ -39,6 +39,17 @@ def __main__(args=None):
         parser.add_argument("-phase_name", type=str, default="Prec", help="Define the phase name for the ang file")
         parser.add_argument("-phase_formula", type=str, default="NiAl", help="Define the phase formula for the ang file")
 
+        parser.add_argument(
+            "-conf_path",
+            type=str,
+            default=None,
+            help=(
+                "Optional configuration file kept for backward compatibility. "
+                "It is ignored by distord.py but documented for users coming "
+                "from the README instructions."
+            ),
+        )
+
         parser.add_argument("-id_xp", type=int, default=0, help="Define the xp id to save the results")
         parser.add_argument("-seed", type=int, default=None, help="Define random seed")
 
