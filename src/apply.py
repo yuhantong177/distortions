@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt, cm
 import skimage
 from skimage.transform import PolynomialTransform
 
-from misc.tools import Aligner, compute_score
+from src.misc.tools import Aligner, compute_score
 
 import cv2
 import json
