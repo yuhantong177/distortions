@@ -1,7 +1,7 @@
 import argparse
 import numpy as np
-from ang.write_core_ang import Ang
-from ang.phase import Phase
+from src.ang.write_core_ang import Ang
+from src.ang.phase import Phase
 
 from matplotlib import pyplot as plt, cm
 

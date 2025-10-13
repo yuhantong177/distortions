@@ -28,6 +28,10 @@ def __main__(args=None):
 
         args = parser.parse_args()
 
+    # Ensure output folders exist before attempting to write images later on.
+    os.makedirs(args.align_dir, exist_ok=True)
+    os.makedirs(args.out_dir, exist_ok=True)
+
     # Load configuration
     with open(args.conf_path, "r") as conf_file:
         conf = json.loads(conf_file.read())
