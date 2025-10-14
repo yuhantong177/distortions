@@ -36,11 +36,29 @@ def __main__(args=None):
     with open(args.conf_path, "r") as conf_file:
         conf = json.loads(conf_file.read())
 
+    def _load_grayscale_image(path, label):
+        if not os.path.exists(path):
+            raise FileNotFoundError(
+                "{label} not found at '{path}'. Verify the CLI paths supplied to align.".format(
+                    label=label, path=path
+                )
+            )
+
+        image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+        if image is None:
+            raise IOError(
+                (
+                    "OpenCV could not load the {label} from '{path}'. "
+                    "Check that the file is a readable image (e.g. PNG/TIF) and not locked by another application."
+                ).format(label=label, path=path)
+            )
+        return image
+
     # Load for the segment/esbd
-    segment = cv2.imread(args.seg_ref_path, 0)
+    segment = _load_grayscale_image(args.seg_ref_path, "segmented reference")
     segment = Aligner.rescale(segment, rescale=(conf["rescale"]["x"], conf["rescale"]["y"]))
 
-    ebsd = cv2.imread(args.ebsd_ref_path, 0)
+    ebsd = _load_grayscale_image(args.ebsd_ref_path, "EBSD reference")
 
     # Look for best alignment
     print("Look for best alignment...")

@@ -88,7 +88,17 @@ def __main__(args=None):
     segment_align = _load_grayscale_image(args.seg_ref_path, "aligned segmentation")
     ebsd = _load_grayscale_image(args.ebsd_ref_path, "EBSD reference")
 
-    assert segment_align.shape == ebsd.shape, "Grain and shape must be of the same dimension"
+    if segment_align.shape != ebsd.shape:
+        raise SystemExit(
+            (
+                "distord expects the aligned segmentation to have the same shape as the EBSD image. "
+                "Got segment {seg_shape} vs EBSD {ebsd_shape}. "
+                "Run align.py first (or reuse its segment.align.<id>.png output) so the inputs share the exact dimensions."
+            ).format(
+                seg_shape=segment_align.shape,
+                ebsd_shape=ebsd.shape,
+            )
+        )
 
     # Compute initial score
     init_score = compute_score(segment=segment_align, ebsd=ebsd)

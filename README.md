@@ -99,6 +99,11 @@ $> python3 align.py \
         -xp_id 0
 ```
 
+> 💡 Tip: when working from an IDE you can run
+> `python scripts/run_align_command.py` which forwards the same call through
+> `python -m src.align` and prints any errors raised by OpenCV or missing
+> dependencies.
+
 align.py dumps:
  - ${align_dir}/segment.align.${xp_id}.png: segmented electron data that best fit the current EBSD speckle
  - ${out_dir}/overlap.align.${xp_id}.png: the overlap between the re-align segmented electron image and the EBSD image before correction
@@ -117,7 +122,6 @@ distord.py dumps:
 
 If you want to run distord.py on our sample, use the following instruction (drop ``-ang_ref_path`` when you only need the warped PNGs):
 
-
 ```
 $> python3 distord.py \
         -seg_ref_path ../data/AM718/segment.align/segment.align.0.png
@@ -130,10 +134,12 @@ $> python3 distord.py \
 Note: Do not forget to unzip the file data/AM718/ang/AM718.zip !
 
 If you encounter an error such as ``cv::findDecoder ... can't open/read file``
-or ``AttributeError: 'NoneType' object has no attribute 'shape'``, the
-distortion step could not read one of the images. Double-check the
-``-seg_ref_path`` and ``-ebsd_ref_path`` arguments and make sure the files are
-reachable from the working directory where you run the command.
+or ``distord expects the aligned segmentation to have the same shape as the
+EBSD image`` the distortion step could not read one of the images or you fed it
+the raw segmentation instead of the `segment.align.<id>.png` produced by
+``align.py``.  Double-check the ``-seg_ref_path`` and ``-ebsd_ref_path``
+arguments, make sure the files are reachable from the working directory where
+you run the command, and rerun the alignment step if necessary.
 
 You can also change the mesh properties with the following argument:
 ```
@@ -158,6 +164,13 @@ segmented image (SEM-CL, SE, BSE, …) without manually chaining
 `src/register_modal_image.py`.  It performs the linear alignment followed by
 the CMA-ES polynomial distortion in a single command and drops the same files
 as the two individual scripts.
+
+`align.py` is responsible for bringing the two modalities to the same pixel
+grid (rotation + translation + optional rescale).  `distord.py` then refines the
+match by learning the non-linear warp that compensates for microscope tilt or
+lens distortion.  To compare grain directions directly you typically run both
+steps: start with `align.py` (or the IDE helper) to generate
+`segment.align.<id>.png`, then feed that output into `distord.py`.
 
 ```
 python -m src.register_modal_image \
