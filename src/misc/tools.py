@@ -89,10 +89,10 @@ def apply_distortion(ebsd, sources, targets, polynom, use_img_magic=False, verbo
 
         # Define the polynomial regression
         model_i = Pipeline([('poly', PolynomialFeatures(degree=polynom, include_bias=True)),
-                            ('linear', LinearRegression(fit_intercept=False, normalize=False))])
+                            ('linear', LinearRegression(fit_intercept=False))])
 
         model_j = Pipeline([('poly', PolynomialFeatures(degree=polynom, include_bias=True)),
-                            ('linear', LinearRegression(fit_intercept=False, normalize=False))])
+                            ('linear', LinearRegression(fit_intercept=False))])
 
         # Solve the regression system
         model_i.fit(sources, targets[:, 0])
