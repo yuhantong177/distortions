@@ -22,7 +22,7 @@ Accurate reconstruction of EBSD datasets by a multimodal data approach using an 
 
 ## Summary:
 
-This repository provides the code to undistord EBSD data (.ang format) based on segmented electron images by using CMA-ES algorithms [1].
+This repository provides the code to undistord EBSD data (.ang format) based on segmented electron images by using CMA-ES algorithms [1].  The ``.ang`` files contain the crystal orientation map and acquisition metadata exported by EBSD systems; they are only required when you want to regenerate the warped ANG dataset alongside the PNG visualisations.
 
 <img src="https://raw.githubusercontent.com/MLmicroscopy/distortions/master/Ti64comparison_horizontal.png" alt="drawing" style="width:400px;"/>
 
@@ -115,8 +115,8 @@ distord.py dumps:
  - ${out_dir}/overlap.distord.${xp_id}.png: the overlap between the re-align segmented electron image and the EBSD image after correction
  - ${out_dir}/params.${xp_id}.png: the parameters of the polynomial transformation and the mesh (json file)
 
+If you want to run distord.py on our sample, use the following instruction (drop ``-ang_ref_path`` when you only need the warped PNGs):
 
-If you want to run distord.py on our sample, use the following instruction:
 
 ```
 $> python3 distord.py \
@@ -128,6 +128,12 @@ $> python3 distord.py \
         -xp_id 0
 ```
 Note: Do not forget to unzip the file data/AM718/ang/AM718.zip !
+
+If you encounter an error such as ``cv::findDecoder ... can't open/read file``
+or ``AttributeError: 'NoneType' object has no attribute 'shape'``, the
+distortion step could not read one of the images. Double-check the
+``-seg_ref_path`` and ``-ebsd_ref_path`` arguments and make sure the files are
+reachable from the working directory where you run the command.
 
 You can also change the mesh properties with the following argument:
 ```
@@ -163,6 +169,8 @@ python -m src.register_modal_image \
     --mesh-step 65 --mesh-std 5 --num-sampling 200 --polynom 3
 ```
 
+> **Need only PNG outputs?** Omit ``--ang-file`` and the helper will skip the ANG export step while still aligning and warping the SEM image onto the EBSD reference.
+
 > **Tip:** run the command from the root of the repository (the folder that
 > contains `src/`).  This ensures Python can resolve the internal modules such
 > as `src.misc.tools`.  When invoked from another directory you will typically
@@ -183,7 +191,6 @@ captures the output from `python -m src.distord`. When the subprocess fails
 (for example because `numpy` or `opencv` is missing), the script surfaces the
 stdout/stderr streams so you can immediately see which dependency has to be
 installed.
-
    
 
 ## Acknowledgement:

@@ -21,6 +21,8 @@ python -m src.register_modal_image \
     --xp-id 0 \
     --mesh-step 65 --mesh-std 5 --num-sampling 200 --polynom 3
 ```
+If you only need the distorted PNG outputs, drop the ``--ang-file`` flag.  The
+non-linear warp is still computed, but no ANG metadata will be produced.
 
 The command above creates all the files produced by ``align.py`` and
 ``distord.py`` in ``../data/AM718/out_demo`` while also exposing the
@@ -60,8 +62,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--ang-file",
-        required=True,
-        help="ANG file associated with the EBSD dataset",
+        help=(
+            "Optional ANG file associated with the EBSD dataset.  Provide it if "
+            "you want the warped ANG metadata to be regenerated alongside the "
+            "PNG outputs."
+        ),
     )
     parser.add_argument(
         "--config",
