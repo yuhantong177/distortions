@@ -83,6 +83,5 @@ def main() -> None:
             "packages such as numpy/opencv is the most common cause)."
         )
 
-
 if __name__ == "__main__":
     main()
