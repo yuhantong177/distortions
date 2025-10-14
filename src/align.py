@@ -71,6 +71,7 @@ def __main__(args=None):
         return image
 
     # Load for the segment/esbd
+
     segment_raw = _load_grayscale_image(args.seg_ref_path, "segmented reference")
 
     ebsd = _load_grayscale_image(args.ebsd_ref_path, "EBSD reference")

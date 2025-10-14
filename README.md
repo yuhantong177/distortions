@@ -122,6 +122,7 @@ distord.py dumps:
  - ${out_dir}/params.${xp_id}.png: the parameters of the polynomial transformation and the mesh (json file)
 
 
+
 If you want to run distord.py on our sample, use the following instruction (drop ``-ang_ref_path`` when you only need the warped PNGs):
 
 ```
