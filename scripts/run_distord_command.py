@@ -19,6 +19,7 @@ def main() -> None:
 
     seg_ref_path = repo_root / "data/AM718/segment.align/segment.align.0.png"
     ebsd_ref_path = repo_root / "data/AM718/ebsd/AM718_ebsd.jpg"
+    
     # Set to ``None`` if you do not have ANG metadata and only need the PNG outputs.
     ang_ref_path = repo_root / "data/AM718/ang/AM718.ang"
     out_dir = repo_root / "data/AM718/out"
@@ -42,6 +43,7 @@ def main() -> None:
         str(seg_ref_path),
         "-ebsd_ref_path",
         str(ebsd_ref_path),
+
         "-out_dir",
         str(out_dir),
         "-id_xp",
@@ -58,7 +60,6 @@ def main() -> None:
 
     if ang_ref_path is not None:
         command.extend(["-ang_ref_path", str(ang_ref_path)])
-
     print(f"Configuration template: {config_path}")
     print("Running:", " ".join(command))
 
@@ -80,7 +81,6 @@ def main() -> None:
             "distord failed. Review the error output above (missing Python "
             "packages such as numpy/opencv is the most common cause)."
         )
-
 
 if __name__ == "__main__":
     main()
