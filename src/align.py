@@ -4,12 +4,28 @@ import json
 import numpy as np
 
 from matplotlib import pyplot as plt, cm
-from misc.tools import Aligner, compute_score
+from src.misc.tools import Aligner, compute_score
 import argparse
 
 
 def get_range(conf):
     return np.arange(conf["start"], conf["end"], conf["step"])
+
+
+def get_rescale_values(axis_conf):
+    """Return a numpy array of rescale factors for one axis.
+
+    The configuration accepts either a single float value (historical
+    behaviour) or a dictionary with ``start``, ``end`` and ``step`` keys to
+    describe a grid-search range.  ``np.arange`` is used internally which means
+    the upper bound is exclusive, matching the behaviour already used for the
+    translation/rotation sweeps.
+    """
+
+    if isinstance(axis_conf, dict):
+        return get_range(axis_conf)
+
+    return np.array([axis_conf], dtype=float)
 
 
 def __main__(args=None):
@@ -28,49 +44,101 @@ def __main__(args=None):
 
         args = parser.parse_args()
 
+    # Ensure output folders exist before attempting to write images later on.
+    os.makedirs(args.align_dir, exist_ok=True)
+    os.makedirs(args.out_dir, exist_ok=True)
+
     # Load configuration
     with open(args.conf_path, "r") as conf_file:
         conf = json.loads(conf_file.read())
 
-    # Load for the segment/esbd
-    segment = cv2.imread(args.seg_ref_path, 0)
-    segment = Aligner.rescale(segment, rescale=(conf["rescale"]["x"], conf["rescale"]["y"]))
+    def _load_grayscale_image(path, label):
+        if not os.path.exists(path):
+            raise FileNotFoundError(
+                "{label} not found at '{path}'. Verify the CLI paths supplied to align.".format(
+                    label=label, path=path
+                )
+            )
 
-    ebsd = cv2.imread(args.ebsd_ref_path, 0)
+        image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+        if image is None:
+            raise IOError(
+                (
+                    "OpenCV could not load the {label} from '{path}'. "
+                    "Check that the file is a readable image (e.g. PNG/TIF) and not locked by another application."
+                ).format(label=label, path=path)
+            )
+        return image
+
+    # Load for the segment/esbd
+    segment_raw = _load_grayscale_image(args.seg_ref_path, "segmented reference")
+
+    ebsd = _load_grayscale_image(args.ebsd_ref_path, "EBSD reference")
 
     # Look for best alignment
     print("Look for best alignment...")
-    best_score = 0
+    best_score = -1
     best_val, best_segment = None, None
 
-    for angle in get_range(conf["grid_search"]["rotate"]):
+    rescale_conf = conf.get("rescale", {"x": 1.0, "y": 1.0})
+    rescale_x_values = get_rescale_values(rescale_conf.get("x", 1.0))
+    rescale_y_values = get_rescale_values(rescale_conf.get("y", 1.0))
 
-        # use a private method to avoid rotating at each iteration
-        init_segment = np.copy(segment)
-        rot_segment = Aligner.rotate(init_segment, angle)
+    for scale_x in rescale_x_values:
+        for scale_y in rescale_y_values:
+            segment = Aligner.rescale(segment_raw, rescale=(scale_x, scale_y))
 
-        for tx in get_range(conf["grid_search"]["translate_x"]):
-            for ty in get_range(conf["grid_search"]["translate_y"]):
+            for angle in get_range(conf["grid_search"]["rotate"]):
 
-                align_segment = Aligner.translate(segment=rot_segment,
-                                                  tx=tx, ty=ty,
-                                                  shape=ebsd.shape[::-1])
+                # use a private method to avoid rotating at each iteration
+                init_segment = np.copy(segment)
+                rot_segment = Aligner.rotate(init_segment, angle)
 
-                score = compute_score(segment=align_segment, ebsd=ebsd)
+                for tx in get_range(conf["grid_search"]["translate_x"]):
+                    for ty in get_range(conf["grid_search"]["translate_y"]):
 
-                if score > best_score:
-                    best_score = score
-                    best_segment = np.copy(align_segment)
-                    best_val = (best_score, (tx, ty), angle)
-                    print("Score: {0:.4f}, tx: {1}, ty: {2}, angle: {3}".format(float(best_score), tx, ty, angle))
+                        align_segment = Aligner.translate(segment=rot_segment,
+                                                          tx=tx, ty=ty,
+                                                          shape=ebsd.shape[::-1])
+
+                        score = compute_score(segment=align_segment, ebsd=ebsd)
+
+                        if score > best_score:
+                            best_score = score
+                            best_segment = np.copy(align_segment)
+                            best_val = {
+                                "score": float(best_score),
+                                "translate": (int(tx), int(ty)),
+                                "angle": float(angle),
+                                "rescale": (float(scale_x), float(scale_y)),
+                            }
+                            print(
+                                "Score: {0:.4f}, tx: {1}, ty: {2}, angle: {3}, rescale: ({4:.4f}, {5:.4f})".format(
+                                    float(best_score),
+                                    tx,
+                                    ty,
+                                    angle,
+                                    scale_x,
+                                    scale_y,
+                                )
+                            )
+
+    if best_val is None:
+        raise SystemExit(
+            "align did not evaluate any configuration. Verify the grid-search ranges and rescale settings."
+        )
 
     # Display results
-    (best_score, (tx, ty), angle) = best_val
+    tx, ty = best_val["translate"]
+    angle = best_val["angle"]
+    rescale = best_val["rescale"]
     print("----------------------------------------------")
     print("Best score: ", best_score)
     print(" - tx  :  ", tx)
     print(" - ty  :  ", ty)
     print(" - rot : ", angle)
+    print(" - sx  :  ", rescale[0])
+    print(" - sy  :  ", rescale[1])
     print("----------------------------------------------")
 
     # Plot results
@@ -90,9 +158,9 @@ def __main__(args=None):
                     ebsd=os.path.basename(args.ebsd_ref_path),
                     segment=os.path.basename(args.seg_ref_path),
                     conf=conf,
-                    rescale=(conf["rescale"]["x"], conf["rescale"]["y"]),
+                    rescale=rescale,
                     translate=[int(tx), int(ty)],
-                    angle=int(angle))
+                    angle=float(angle))
         results_json = json.dumps(data)
 
         f.write(results_json.encode('utf8', 'replace'))
