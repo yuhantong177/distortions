@@ -136,7 +136,7 @@ class Aligner(object):
 
     @staticmethod
     def rescale(segment, rescale):
-        if rescale[0] != 1 and rescale[1] != 1:
+        if rescale[0] != 1 or rescale[1] != 1:
             segment = cv2.resize(segment, None,
                                  fx=rescale[0],
                                  fy=rescale[1],
