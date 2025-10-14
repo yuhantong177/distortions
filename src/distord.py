@@ -7,9 +7,9 @@ from distutils.util import strtobool
 from matplotlib import pyplot as plt, cm
 import argparse
 
-from misc.tools import compute_score, apply_distortion
-from ang.write_core_ang import Ang
-from ang.phase import Phase
+from src.misc.tools import compute_score, apply_distortion
+from src.ang.write_core_ang import Ang
+from src.ang.phase import Phase
 
 import json
 import cma
@@ -24,7 +24,16 @@ def __main__(args=None):
 
         parser.add_argument("-seg_ref_path", type=str, required=True, help="Path to the segmented image")
         parser.add_argument("-ebsd_ref_path", type=str, required=True, help="Path to the grain image")
-        parser.add_argument("-ang_ref_path", type=str, required=True, help="Path to the ang file")
+        parser.add_argument(
+            "-ang_ref_path",
+            type=str,
+            default=None,
+            help=(
+                "Optional ANG metadata exported from the EBSD acquisition. "
+                "If omitted the distortion is still computed and saved as PNG "
+                "files, but no ANG file will be generated."
+            ),
+        )
 
         parser.add_argument("-out_dir", type=str, required=True, help="Directory with input image")
 
@@ -38,14 +47,46 @@ def __main__(args=None):
         parser.add_argument("-phase_name", type=str, default="Prec", help="Define the phase name for the ang file")
         parser.add_argument("-phase_formula", type=str, default="NiAl", help="Define the phase formula for the ang file")
 
+        parser.add_argument(
+            "-conf_path",
+            type=str,
+            default=None,
+            help=(
+                "Optional configuration file kept for backward compatibility. "
+                "It is ignored by distord.py but documented for users coming "
+                "from the README instructions."
+            ),
+        )
+
         parser.add_argument("-id_xp", type=int, default=0, help="Define the xp id to save the results")
         parser.add_argument("-seed", type=int, default=None, help="Define random seed")
 
         args = parser.parse_args()
 
+    # Ensure the output directory exists before writing results later on
+    os.makedirs(args.out_dir, exist_ok=True)
+
+    def _load_grayscale_image(path, label):
+        if not os.path.exists(path):
+            raise FileNotFoundError(
+                "{label} not found at '{path}'. Verify the CLI paths supplied to distord.".format(
+                    label=label, path=path
+                )
+            )
+
+        image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+        if image is None:
+            raise IOError(
+                (
+                    "OpenCV could not load the {label} from '{path}'. "
+                    "Check that the file is a readable image (e.g. PNG/TIF) and not locked by another application."
+                ).format(label=label, path=path)
+            )
+        return image
+
     # Load ebsd/segment. Note that the segment must be preprocess with align.py
-    segment_align = cv2.imread(args.seg_ref_path, 0)
-    ebsd = cv2.imread(args.ebsd_ref_path, 0)
+    segment_align = _load_grayscale_image(args.seg_ref_path, "aligned segmentation")
+    ebsd = _load_grayscale_image(args.ebsd_ref_path, "EBSD reference")
 
     assert segment_align.shape == ebsd.shape, "Grain and shape must be of the same dimension"
 
@@ -169,13 +210,25 @@ def __main__(args=None):
             targets=targets.tolist(),
             params=params.tolist())))
 
-    # Create ang file
-    ang = Ang(args.ang_ref_path)
-    ang.warp(params)
+    # Optionally create a warped ANG file if the metadata was supplied
+    if args.ang_ref_path:
+        if not os.path.exists(args.ang_ref_path):
+            raise FileNotFoundError(
+                "ANG metadata not found at '{path}'. Remove -ang_ref_path or provide the correct file.".format(
+                    path=args.ang_ref_path
+                )
+            )
+        ang = Ang(args.ang_ref_path)
+        ang.warp(params)
 
-    phase = Phase.create_from_phase(id=2, name=args.phase_name, formula=args.phase_formula, phase=ang.phases[0])
-    ang.add_phase(segment_align=segment_align, phase=phase)
-    ang.dump_file(os.path.join(args.out_dir, os.path.basename(args.ang_ref_path)))
+        phase = Phase.create_from_phase(
+            id=2,
+            name=args.phase_name,
+            formula=args.phase_formula,
+            phase=ang.phases[0],
+        )
+        ang.add_phase(segment_align=segment_align, phase=phase)
+        ang.dump_file(os.path.join(args.out_dir, os.path.basename(args.ang_ref_path)))
 
     return best_score, final_ebsd, params, all_scores
 
