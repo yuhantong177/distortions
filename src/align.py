@@ -76,6 +76,22 @@ def get_rescale_values(axis_conf):
     return np.array([axis_conf], dtype=float)
 
 
+def get_rescale_values(axis_conf):
+    """Return a numpy array of rescale factors for one axis.
+
+    The configuration accepts either a single float value (historical
+    behaviour) or a dictionary with ``start``, ``end`` and ``step`` keys to
+    describe a grid-search range.  ``np.arange`` is used internally which means
+    the upper bound is exclusive, matching the behaviour already used for the
+    translation/rotation sweeps.
+    """
+
+    if isinstance(axis_conf, dict):
+        return get_range(axis_conf)
+
+    return np.array([axis_conf], dtype=float)
+
+
 def __main__(args=None):
 
     if args is None:
@@ -119,6 +135,7 @@ def __main__(args=None):
         return image
 
     # Load for the segment/esbd
+
     segment_raw = _load_grayscale_image(args.seg_ref_path, "segmented reference")
 
     ebsd = _load_grayscale_image(args.ebsd_ref_path, "EBSD reference")
@@ -129,6 +146,7 @@ def __main__(args=None):
         "Note: only the segmented image is rescaled during the grid search; "
         "the EBSD reference always stays at its original pixel size."
     )
+
     best_score = -1
     best_val, best_segment = None, None
 

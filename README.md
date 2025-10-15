@@ -56,7 +56,9 @@ The process relies on two scripts:
  
 align.py computes a linear transformation (rescale/rotate/translate) of the segmented electron data and fit it to the ebsd size.
 In order to find the best linear alignment, it performs a grid search over 3 parameters: the angle (degree), tx (pixels), ty (pixels).
+
 The rescale parameters can either be fixed (historical behaviour) or described as ranges so the script can try multiple scale combinations during the search. Only the segmented SEM/CL/BSE image is rescaled during this step—the EBSD speckle stays at its native pixel size so the grid search always works in EBSD coordinates.
+
 This script relies on a json config file (e..g conf/AM718.conf).
 
 ```
@@ -87,6 +89,7 @@ This script relies on a json config file (e..g conf/AM718.conf).
 
 As a rule of thumb, we recommend you to first use the script with a large range windows and step size.
 Once you located the range of interest, refine the grid search within a smaller range and a small step size.
+
 When the microscope magnification or tilt makes the exact scale uncertain, declare ``start``/``end``/``step`` for one or both axes.  Example: ``"x": {"start": 0.85, "end": 0.95, "step": 0.01}`` now explores the values ``0.85, 0.86, …, 0.95`` (note the inclusive upper bound) while keeping backward compatibility with configuration files that only provide a single float.
 
 Large sweeps on 4 dimensions can explode combinatorially, so you can switch the alignment search to a discrete random sampler instead of an exhaustive grid by adding a ``search`` block:
@@ -139,7 +142,6 @@ distord.py dumps:
  - ${out_dir}/mesh_distord.${xp_id}.png: the EBSD and the mesh used to compute the polynomial distortion  
  - ${out_dir}/overlap.distord.${xp_id}.png: the overlap between the re-align segmented electron image and the EBSD image after correction
  - ${out_dir}/params.${xp_id}.png: the parameters of the polynomial transformation and the mesh (json file)
-
 
 If you want to run distord.py on our sample, use the following instruction (drop ``-ang_ref_path`` when you only need the warped PNGs):
 
