@@ -89,10 +89,10 @@ def apply_distortion(ebsd, sources, targets, polynom, use_img_magic=False, verbo
 
         # Define the polynomial regression
         model_i = Pipeline([('poly', PolynomialFeatures(degree=polynom, include_bias=True)),
-                            ('linear', LinearRegression(fit_intercept=False, normalize=False))])
+                            ('linear', LinearRegression(fit_intercept=False))])
 
         model_j = Pipeline([('poly', PolynomialFeatures(degree=polynom, include_bias=True)),
-                            ('linear', LinearRegression(fit_intercept=False, normalize=False))])
+                            ('linear', LinearRegression(fit_intercept=False))])
 
         # Solve the regression system
         model_i.fit(sources, targets[:, 0])
@@ -136,7 +136,7 @@ class Aligner(object):
 
     @staticmethod
     def rescale(segment, rescale):
-        if rescale[0] != 1 and rescale[1] != 1:
+        if rescale[0] != 1 or rescale[1] != 1:
             segment = cv2.resize(segment, None,
                                  fx=rescale[0],
                                  fy=rescale[1],
