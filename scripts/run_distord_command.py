@@ -29,9 +29,9 @@ def main() -> None:
     # we are working with when editing the script.
     config_path = repo_root / "conf/AM718.align.conf"
     xp_id = 0
-    mesh_step = 65
+    mesh_step = 20
     mesh_std = 5
-    num_sampling = 200
+    num_sampling = 2000
     polynom = 3
 
     out_dir.mkdir(parents=True, exist_ok=True)

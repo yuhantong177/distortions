@@ -140,8 +140,7 @@ def __main__(args=None):
 
     ebsd = _load_grayscale_image(args.ebsd_ref_path, "EBSD reference")
 
-    # Look for best alignment
-    print("Look for best alignment ({mode} search)...".format(mode=search_mode))
+
     print(
         "Note: only the segmented image is rescaled during the grid search; "
         "the EBSD reference always stays at its original pixel size."
@@ -160,7 +159,10 @@ def __main__(args=None):
 
     search_conf = conf.get("search", {})
     search_mode = search_conf.get("mode", "grid").lower()
-
+    
+    # Look for best alignment
+    print("Look for best alignment ({mode} search)...".format(mode=search_mode))
+    
     if search_mode not in {"grid", "random"}:
         raise ValueError(
             "Unsupported search mode '{mode}'. Expected 'grid' or 'random'.".format(
