@@ -64,14 +64,14 @@ This script relies on a json config file (e..g conf/AM718.conf).
 ```
 {
   "rescale": {        # Use either a single value or a range with start/end/step for each axis
-    "x": 0.9,
+    "x": 0.9,         # ``rescale = (segmented-image pixel size) / (EBSD pixel size)``
     "y": 0.9
   },
   "grid_search": {    # The grid search will iterate over the range of parameters define by the user
     "rotate": {       # Rotation (degree)
-      "start": -1.5,  
-      "end": 0.5,
-      "step": 0.5
+      "start": -1.5,  # The EBSD reference is never resized during this step, so every translation (``tx``/``ty``) and rotation is measured in EBSD pixels and degrees, with positive translations shifting the segmented image right/down relative to the fixed EBSD speckle.
+      "end": 0.5,     # upper left corner is aligned at 0,0 translation
+      "step": 0.      # rotation positive is segment image rotating counterclockwise
     },
     "translate_x": {  # horizontal translation (pixels)
       "start": -320,

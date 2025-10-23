@@ -17,11 +17,18 @@ from pathlib import Path
 def main() -> None:
     repo_root = Path(__file__).resolve().parent.parent
 
-    seg_ref_path = repo_root / "data/AM718/segment/AM718_segment.png"
-    ebsd_ref_path = repo_root / "data/AM718/ebsd/AM718_ebsd.jpg"
-    config_path = repo_root / "conf/AM718.align.conf"
-    align_dir = repo_root / "data/AM718/segment.align"
-    out_dir = repo_root / "data/AM718/out"
+# =============================================================================
+#     seg_ref_path = repo_root / "data/AM718/segment/AM718_segment.png"
+#     ebsd_ref_path = repo_root / "data/AM718/ebsd/AM718_ebsd.jpg"
+#     config_path = repo_root / "conf/AM718.align.conf"
+#     align_dir = repo_root / "data/AM718/segment.align"
+#     out_dir = repo_root / "data/AM718/out"
+# =============================================================================
+    seg_ref_path = repo_root / "data/RV/binary_semcl_halfstone_floyd_cropped_compress.png"
+    ebsd_ref_path = repo_root / "data/RV/binary_ebsd_halfstone_floyd_maskout_black_compress.png"
+    config_path = repo_root / "conf/RV.align.conf"
+    align_dir = repo_root / "data/RV/segment.align"
+    out_dir = repo_root / "data/RV/out"    
     xp_id = 0
 
     align_dir.mkdir(parents=True, exist_ok=True)
