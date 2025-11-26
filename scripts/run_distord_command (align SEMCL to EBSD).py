@@ -40,9 +40,9 @@ def main() -> None:
     # we are working with when editing the script.
     config_path = repo_root / "conf/RV.align.conf"
     xp_id = 0
-    mesh_step = 105
+    mesh_step = 65
     mesh_std = 5
-    num_sampling = 100
+    num_sampling = 2000
     polynom = 3
 
     out_dir.mkdir(parents=True, exist_ok=True)
