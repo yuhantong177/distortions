@@ -19,7 +19,7 @@ PARAMS = {
     "psf_sigma": 5,         # blur radius in pixels; try 6–12 before 30+
 
     # --- RL (Richardson–Lucy) ---
-    "rl_iters": 10,           # 10–20 w/ TV is usually enough
+    "rl_iters": 20,           # 10–20 w/ TV is usually enough
     "rl_post_gauss": 0.3,     # gentle Gaussian to tame halos; set 0 to disable
     "pre_denoise": True,      # light bilateral before RL
     "pre_sigma_color": 0.03,  # <= 0.04 keeps faint small grains
@@ -206,6 +206,6 @@ if __name__ == "__main__":
     # adjust to your repo layout as before
     repo_root = Path(__file__).resolve().parent.parent
     # 👉 PUT YOUR FILE PATHS HERE (NO trailing commas!)
-    PARAMS["input_path"]  = repo_root / "data/RV/EBSD raw cropped.tif"
-    PARAMS["output_path"] = repo_root / "data/RV/denoised_ebsd.png"
+    PARAMS["input_path"]  = repo_root / "data/RV/sem_cl_superimposed_reduced.tif"
+    PARAMS["output_path"] = repo_root / "data/RV/denoised_sem_cl_superimposed.png"
     run()
