@@ -30,30 +30,8 @@ def main() -> None:
 #     # we are working with when editing the script.
 #     config_path = repo_root / "conf/AM718.align.conf"
 # =============================================================================
-    reference_mode = "semcl"  # Choose between "semcl" or "ebsd" as the reference image
-    swap_segment_and_reference = False  # Set to True if you want to flip which image is passed as the segment
-    enable_auto_crop = True  # Set to False to distort the full image like the original script
-
-    # Paths for the two possible reference images you may want to test with.
-    semcl_reference_path = repo_root / "data/RV/binary_semcl_halfstone_floyd_cropped_compress.png"
-    ebsd_reference_path = repo_root / "data/RV/binary_ebsd_halfstone_floyd_maskout_black_compress.png"
-
-    reference_paths = {
-        "semcl": semcl_reference_path,
-        "ebsd": ebsd_reference_path,
-    }
-
-    try:
-        selected_reference = reference_paths[reference_mode]
-    except KeyError as exc:
-        raise SystemExit(f"Unsupported reference_mode '{reference_mode}'. Use one of: {', '.join(reference_paths)}") from exc
-
     seg_ref_path = repo_root / "data/RV/segment.align/segment.align.0.png"
-    ebsd_ref_path = selected_reference
-
-    if swap_segment_and_reference:
-        seg_ref_path, ebsd_ref_path = ebsd_ref_path, seg_ref_path
-
+    ebsd_ref_path = repo_root / "data/RV/binary_semcl_halfstone_floyd_cropped_compress.png"
     # Set to ``None`` if you do not have ANG metadata and only need the PNG outputs.
     ang_ref_path = None
     out_dir = repo_root / "data/RV/out"
@@ -91,14 +69,10 @@ def main() -> None:
         str(polynom),
     ]
 
-    if enable_auto_crop:
-        command.append("-auto_crop")
-
     if ang_ref_path is not None:
         command.extend(["-ang_ref_path", str(ang_ref_path)])
 
     print(f"Configuration template: {config_path}")
-    print(f"Reference mode: {reference_mode} | swap_segment_and_reference={swap_segment_and_reference} | auto_crop={enable_auto_crop}")
     print("Running:", " ".join(command))
 
     result = subprocess.run(
