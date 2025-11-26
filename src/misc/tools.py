@@ -14,24 +14,43 @@ from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
 
 
-def compute_score(segment, ebsd):
+def compute_score(segment, ebsd, normalization="dice"):
     """
-    Compute Dice measure (or f1 score) on the segmented pixels
+    Compute an overlap score between the segmented pixels.
 
     :param segment: segmented electron image (uint8 format)
     :param ebsd:  speckle segmented out of the ebsd file (uint8 format)
-    :return: Dice score
+    :param normalization: how to normalize the overlap. "dice" reproduces the
+        historical behaviour (sum of both masks). "min" only uses the smaller
+        mask which avoids rewarding aggressive rescaling of the larger image to
+        fit the other one.
+    :return: overlap score (higher is better)
     """
 
     segmented_ebsd = ebsd >= 128
     segmented_segment = segment >= 128
 
     co_segmented = (segmented_ebsd & segmented_segment).sum()
-    normalization = segmented_segment.sum() + segmented_ebsd.sum()
+    ebsd_sum = segmented_ebsd.sum()
+    segment_sum = segmented_segment.sum()
 
-    score = 2 * co_segmented / normalization
+    if normalization == "dice":
+        normalization_val = segment_sum + ebsd_sum
+    elif normalization == "min":
+        normalization_val = 2 * min(segment_sum, ebsd_sum)
+    else:
+        raise ValueError(
+            "Unsupported normalization '{mode}'. Expected 'dice' or 'min'.".format(
+                mode=normalization
+            )
+        )
 
-    return score
+    if normalization_val == 0:
+        return 0.0
+
+    score = 2 * co_segmented / normalization_val
+
+    return float(score)
 
 
 # create a uuid for the current session to generate tmp png files. (nasty hack!)

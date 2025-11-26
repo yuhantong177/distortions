@@ -50,6 +50,8 @@ def main() -> None:
         str(out_dir),
         "-id_xp",
         str(xp_id),
+        "-score_normalization",
+        "min",
     ]
 
     print(f"Configuration template: {config_path}")
@@ -77,3 +79,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
