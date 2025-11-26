@@ -48,26 +48,6 @@ def __main__(args=None):
         parser.add_argument("-phase_formula", type=str, default="NiAl", help="Define the phase formula for the ang file")
 
         parser.add_argument(
-            "-auto_crop",
-            action="store_true",
-            help=(
-                "Automatically center-crop the EBSD reference to match the aligned segmentation "
-                "when the EBSD image is larger. This keeps the original pixel scale instead of "
-                "resizing the SEMCL image."
-            ),
-        )
-
-        parser.add_argument(
-            "-truncate_overlap",
-            action="store_true",
-            help=(
-                "Crop both inputs to their overlapping area based on the aligned origin so only the shared "
-                "region feeds the distortion. This is useful when one image covers a larger area and you "
-                "want to keep the pixel scale while ignoring non-overlapping margins."
-            ),
-        )
-
-        parser.add_argument(
             "-conf_path",
             type=str,
             default=None,
@@ -104,87 +84,21 @@ def __main__(args=None):
             )
         return image
 
-    def _center_crop(image, target_shape):
-        target_height, target_width = target_shape
-        height, width = image.shape
-
-        start_y = max((height - target_height) // 2, 0)
-        start_x = max((width - target_width) // 2, 0)
-
-        end_y = start_y + target_height
-        end_x = start_x + target_width
-
-        return image[start_y:end_y, start_x:end_x]
-
-    def _truncate_to_overlap(image_a, image_b):
-        """Crop both images to the common top-left aligned region.
-
-        This assumes the images share the same origin after running align.py.
-        The function trims any non-overlapping margins while preserving the
-        existing pixel scale.
-        """
-
-        overlap_height = min(image_a.shape[0], image_b.shape[0])
-        overlap_width = min(image_a.shape[1], image_b.shape[1])
-
-        if overlap_height <= 0 or overlap_width <= 0:
-            raise SystemExit(
-                (
-                    "Cannot truncate to overlap: computed non-positive bounds. "
-                    "Got height={height}, width={width} from shapes {shape_a} and {shape_b}."
-                ).format(
-                    height=overlap_height,
-                    width=overlap_width,
-                    shape_a=image_a.shape,
-                    shape_b=image_b.shape,
-                )
-            )
-
-        return (
-            image_a[:overlap_height, :overlap_width],
-            image_b[:overlap_height, :overlap_width],
-            (overlap_height, overlap_width),
-        )
-
     # Load ebsd/segment. Note that the segment must be preprocess with align.py
     segment_align = _load_grayscale_image(args.seg_ref_path, "aligned segmentation")
     ebsd = _load_grayscale_image(args.ebsd_ref_path, "EBSD reference")
 
     if segment_align.shape != ebsd.shape:
-        if args.truncate_overlap:
-            seg_original_shape, ebsd_original_shape = segment_align.shape, ebsd.shape
-            segment_align, ebsd, overlap_shape = _truncate_to_overlap(segment_align, ebsd)
-            print(
-                (
-                    "Truncated to the overlapping region {overlap} from segment {seg_shape} and reference {ebsd_shape}. "
-                    "Only the shared area will be distorted; pixel scale is preserved."
-                ).format(
-                    overlap=overlap_shape,
-                    seg_shape=seg_original_shape,
-                    ebsd_shape=ebsd_original_shape,
-                )
+        raise SystemExit(
+            (
+                "distord expects the aligned segmentation to have the same shape as the EBSD image. "
+                "Got segment {seg_shape} vs EBSD {ebsd_shape}. "
+                "Run align.py first (or reuse its segment.align.<id>.png output) so the inputs share the exact dimensions."
+            ).format(
+                seg_shape=segment_align.shape,
+                ebsd_shape=ebsd.shape,
             )
-        elif args.auto_crop and ebsd.shape[0] >= segment_align.shape[0] and ebsd.shape[1] >= segment_align.shape[1]:
-            original_shape = ebsd.shape
-            ebsd = _center_crop(ebsd, segment_align.shape)
-            print(
-                "Auto-cropped EBSD from {original} to {cropped} to match the segmentation dimensions.".format(
-                    original=original_shape, cropped=ebsd.shape
-                )
-            )
-        else:
-            raise SystemExit(
-                (
-                    "distord expects the aligned segmentation to have the same shape as the EBSD image. "
-                    "Got segment {seg_shape} vs EBSD {ebsd_shape}. "
-                    "If one image spans a larger field-of-view, rerun with -truncate_overlap to keep only the overlapping "
-                    "area from align.py, use -auto_crop to center-crop a larger EBSD frame, or run align.py first so the "
-                    "inputs share the exact dimensions."
-                ).format(
-                    seg_shape=segment_align.shape,
-                    ebsd_shape=ebsd.shape,
-                )
-            )
+        )
 
     # Compute initial score
     init_score = compute_score(segment=segment_align, ebsd=ebsd)
