@@ -116,54 +116,34 @@ def __main__(args=None):
 
         return image[start_y:end_y, start_x:end_x]
 
-    def _nonzero_bbox(image):
-        """Return the bounding box of non-zero pixels or ``None`` if empty."""
-
-        ys, xs = np.nonzero(image)
-        if ys.size == 0 or xs.size == 0:
-            return None
-
-        return (ys.min(), ys.max() + 1, xs.min(), xs.max() + 1)
-
     def _truncate_to_overlap(image_a, image_b):
-        """Crop both images to their shared non-zero region after alignment.
+        """Crop both images to the common top-left aligned region.
 
-        The overlap is computed from the intersection of the non-zero bounding
-        boxes so that the crop follows the aligned content rather than blindly
-        trimming from the top-left corner. This preserves the pixel scale and
-        keeps only the portion that actually overlaps after ``align.py``.
+        This assumes the images share the same origin after running align.py.
+        The function trims any non-overlapping margins while preserving the
+        existing pixel scale.
         """
 
-        bbox_a = _nonzero_bbox(image_a)
-        bbox_b = _nonzero_bbox(image_b)
+        overlap_height = min(image_a.shape[0], image_b.shape[0])
+        overlap_width = min(image_a.shape[1], image_b.shape[1])
 
-        if bbox_a is None or bbox_b is None:
+        if overlap_height <= 0 or overlap_width <= 0:
             raise SystemExit(
                 (
-                    "Cannot truncate to overlap because one of the images is fully empty. "
-                    "Found bbox_a={bbox_a}, bbox_b={bbox_b}. Make sure align.py produced "
-                    "non-zero content for both inputs before truncation."
-                ).format(bbox_a=bbox_a, bbox_b=bbox_b)
-            )
-
-        y0 = max(bbox_a[0], bbox_b[0])
-        y1 = min(bbox_a[1], bbox_b[1])
-        x0 = max(bbox_a[2], bbox_b[2])
-        x1 = min(bbox_a[3], bbox_b[3])
-
-        if y1 <= y0 or x1 <= x0:
-            raise SystemExit(
-                (
-                    "No overlapping non-zero area detected after alignment. "
-                    "bbox_a={bbox_a}, bbox_b={bbox_b}. Double-check the reference/segment "
-                    "selection or disable -truncate_overlap to inspect the full frames."
-                ).format(bbox_a=bbox_a, bbox_b=bbox_b)
+                    "Cannot truncate to overlap: computed non-positive bounds. "
+                    "Got height={height}, width={width} from shapes {shape_a} and {shape_b}."
+                ).format(
+                    height=overlap_height,
+                    width=overlap_width,
+                    shape_a=image_a.shape,
+                    shape_b=image_b.shape,
+                )
             )
 
         return (
-            image_a[y0:y1, x0:x1],
-            image_b[y0:y1, x0:x1],
-            (y1 - y0, x1 - x0),
+            image_a[:overlap_height, :overlap_width],
+            image_b[:overlap_height, :overlap_width],
+            (overlap_height, overlap_width),
         )
 
     # Load ebsd/segment. Note that the segment must be preprocess with align.py
@@ -176,7 +156,7 @@ def __main__(args=None):
             segment_align, ebsd, overlap_shape = _truncate_to_overlap(segment_align, ebsd)
             print(
                 (
-                    "Truncated to the overlapping non-zero region {overlap} from segment {seg_shape} and reference {ebsd_shape}. "
+                    "Truncated to the overlapping region {overlap} from segment {seg_shape} and reference {ebsd_shape}. "
                     "Only the shared area will be distorted; pixel scale is preserved."
                 ).format(
                     overlap=overlap_shape,
