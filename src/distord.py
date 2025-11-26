@@ -60,11 +60,6 @@ def __main__(args=None):
 
         parser.add_argument("-id_xp", type=int, default=0, help="Define the xp id to save the results")
         parser.add_argument("-seed", type=int, default=None, help="Define random seed")
-        parser.add_argument(
-            "-swap_roles",
-            action="store_true",
-            help="Swap EBSD/segment roles so the EBSD image is warped toward the segmentation.",
-        )
 
         args = parser.parse_args()
 
@@ -92,14 +87,6 @@ def __main__(args=None):
     # Load ebsd/segment. Note that the segment must be preprocess with align.py
     segment_align = _load_grayscale_image(args.seg_ref_path, "aligned segmentation")
     ebsd = _load_grayscale_image(args.ebsd_ref_path, "EBSD reference")
-
-    if args.swap_roles:
-        # The user wants to distort the EBSD toward the segmentation instead of
-        # the default SEMCL-to-EBSD workflow.
-        segment_align, ebsd = ebsd, segment_align
-        print(
-            "Swapped roles: distorting the EBSD image toward the segmentation reference."
-        )
 
     if segment_align.shape != ebsd.shape:
         raise SystemExit(

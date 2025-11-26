@@ -17,9 +17,6 @@ from pathlib import Path
 def main() -> None:
     repo_root = Path(__file__).resolve().parent.parent
 
-    align_semcl_to_ebsd = True  # Set to False to align EBSD onto SEMCL instead
-    crop_to_overlap = True  # Save cropped overlap alongside the full alignment
-
 # =============================================================================
 #     seg_ref_path = repo_root / "data/AM718/segment/AM718_segment.png"
 #     ebsd_ref_path = repo_root / "data/AM718/ebsd/AM718_ebsd.jpg"
@@ -27,14 +24,8 @@ def main() -> None:
 #     align_dir = repo_root / "data/AM718/segment.align"
 #     out_dir = repo_root / "data/AM718/out"
 # =============================================================================
-    if align_semcl_to_ebsd:
-        seg_ref_path = repo_root / "data/RV/binary_ebsd_halfstone_floyd_maskout_black_compress.png"  # SEMCL/segment input
-        ebsd_ref_path = repo_root / "data/RV/binary_semcl_halfstone_floyd_cropped_compress.png"  # EBSD reference
-        swap_roles = False
-    else:
-        seg_ref_path = repo_root / "data/RV/binary_semcl_halfstone_floyd_cropped_compress.png"  # EBSD as moving image
-        ebsd_ref_path = repo_root / "data/RV/binary_ebsd_halfstone_floyd_maskout_black_compress.png"  # SEMCL as reference
-        swap_roles = True
+    seg_ref_path = repo_root / "data/RV/binary_ebsd_halfstone_floyd_maskout_black_compress.png" # switched between "seg" and "ebsd" 
+    ebsd_ref_path = repo_root / "data/RV/binary_semcl_halfstone_floyd_cropped_compress.png"# switched between "seg" and "ebsd"
     config_path = repo_root / "conf/RV.align SEMCL to EBSD.conf"
     align_dir = repo_root / "data/RV/segment.align"
     out_dir = repo_root / "data/RV/out"    
@@ -60,12 +51,6 @@ def main() -> None:
         "-id_xp",
         str(xp_id),
     ]
-
-    if swap_roles:
-        command.append("-swap_roles")
-
-    if crop_to_overlap:
-        command.append("-crop_to_overlap")
 
     print(f"Configuration template: {config_path}")
     print("Running:", " ".join(command))
