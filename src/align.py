@@ -105,6 +105,19 @@ def __main__(args=None):
         parser.add_argument("-out_dir", type=str, required=True, help="Output directory (image overlap + affine.pkl)")
 
         parser.add_argument("-id_xp", type=int, default=0, help="Define the xp id to save the results")
+        parser.add_argument(
+            "-swap_roles",
+            action="store_true",
+            help="Swap EBSD/segment roles so the EBSD image is aligned onto the segmentation.",
+        )
+        parser.add_argument(
+            "-crop_to_overlap",
+            action="store_true",
+            help=(
+                "Crop both aligned outputs to the bounding box where the aligned image has data. "
+                "Useful when the moving image covers a larger field of view than the reference."
+            ),
+        )
 
         args = parser.parse_args()
 
@@ -139,6 +152,14 @@ def __main__(args=None):
     segment_raw = _load_grayscale_image(args.seg_ref_path, "segmented reference")
 
     ebsd = _load_grayscale_image(args.ebsd_ref_path, "EBSD reference")
+
+    if args.swap_roles:
+        # The user wants to align the EBSD onto the segmentation instead of the
+        # default SEMCL-to-EBSD workflow.
+        segment_raw, ebsd = ebsd, segment_raw
+        print(
+            "Swapped roles: aligning the EBSD image onto the segmentation reference."
+        )
 
 
     print(
@@ -288,6 +309,42 @@ def __main__(args=None):
     filename_out = os.path.join(args.align_dir, "segment.align.{}.png".format(args.id_xp))
     cv2.imwrite(filename_out, best_segment)
 
+    if args.crop_to_overlap:
+        mask = best_segment > 0
+        coords = np.argwhere(mask)
+
+        if coords.size == 0:
+            raise SystemExit(
+                "crop_to_overlap requested but the aligned image is empty. Check the alignment parameters."
+            )
+
+        y_min, x_min = coords.min(axis=0)
+        y_max, x_max = coords.max(axis=0)
+
+        cropped_segment = best_segment[y_min : y_max + 1, x_min : x_max + 1]
+        cropped_ebsd = ebsd[y_min : y_max + 1, x_min : x_max + 1]
+
+        cropped_segment_path = os.path.join(
+            args.align_dir, "segment.align.cropped.{}.png".format(args.id_xp)
+        )
+        cropped_ebsd_path = os.path.join(
+            args.align_dir, "ebsd.align.cropped.{}.png".format(args.id_xp)
+        )
+
+        cv2.imwrite(cropped_segment_path, cropped_segment)
+        cv2.imwrite(cropped_ebsd_path, cropped_ebsd)
+
+        print(
+            "Cropped overlap saved to {seg_path} and {ebsd_path} (bbox: x=[{x0}, {x1}], y=[{y0}, {y1}]).".format(
+                seg_path=cropped_segment_path,
+                ebsd_path=cropped_ebsd_path,
+                x0=int(x_min),
+                x1=int(x_max),
+                y0=int(y_min),
+                y1=int(y_max),
+            )
+        )
+
     # Dump affine.pkl with all the required information to perform the affine transformation
     with open(os.path.join(args.out_dir, "affine.{}.json".format(args.id_xp)), "wb") as f:
         data = dict(score=best_score,
@@ -296,7 +353,9 @@ def __main__(args=None):
                     conf=conf,
                     rescale=rescale,
                     translate=[int(tx), int(ty)],
-                    angle=float(angle))
+                    angle=float(angle),
+                    swapped=bool(args.swap_roles),
+                    cropped=bool(args.crop_to_overlap))
         results_json = json.dumps(data)
 
         f.write(results_json.encode('utf8', 'replace'))
