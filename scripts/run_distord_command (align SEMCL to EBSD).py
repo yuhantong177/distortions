@@ -67,6 +67,8 @@ def main() -> None:
         str(num_sampling),
         "-polynom",
         str(polynom),
+        "-score_normalization",
+        "min",
     ]
 
     if ang_ref_path is not None:

@@ -105,6 +105,16 @@ def __main__(args=None):
         parser.add_argument("-out_dir", type=str, required=True, help="Output directory (image overlap + affine.pkl)")
 
         parser.add_argument("-id_xp", type=int, default=0, help="Define the xp id to save the results")
+        parser.add_argument(
+            "-score_normalization",
+            type=str,
+            default="dice",
+            choices=["dice", "min"],
+            help=(
+                "Overlap score normalization. Use 'min' to normalize by the smaller mask "
+                "and reduce scale bias when the two images cover different areas."
+            ),
+        )
 
         args = parser.parse_args()
 
@@ -236,7 +246,11 @@ def __main__(args=None):
                                 shape=ebsd.shape[::-1],
                             )
 
-                            score = compute_score(segment=align_segment, ebsd=ebsd)
+                            score = compute_score(
+                                segment=align_segment,
+                                ebsd=ebsd,
+                                normalization=args.score_normalization,
+                            )
                             _update_best(score, align_segment, scale_x, scale_y, angle, tx, ty)
     else:
         # Random search samples discrete values drawn from the configured ranges.
@@ -256,7 +270,11 @@ def __main__(args=None):
                 shape=ebsd.shape[::-1],
             )
 
-            score = compute_score(segment=align_segment, ebsd=ebsd)
+            score = compute_score(
+                segment=align_segment,
+                ebsd=ebsd,
+                normalization=args.score_normalization,
+            )
             _update_best(score, align_segment, scale_x, scale_y, angle, tx, ty)
 
     if best_val is None:

@@ -60,6 +60,16 @@ def __main__(args=None):
 
         parser.add_argument("-id_xp", type=int, default=0, help="Define the xp id to save the results")
         parser.add_argument("-seed", type=int, default=None, help="Define random seed")
+        parser.add_argument(
+            "-score_normalization",
+            type=str,
+            default="dice",
+            choices=["dice", "min"],
+            help=(
+                "Overlap score normalization. Use 'min' to normalize by the smaller mask "
+                "when EBSD/SEMCL cover different areas to avoid scale collapse."
+            ),
+        )
 
         args = parser.parse_args()
 
@@ -101,7 +111,11 @@ def __main__(args=None):
         )
 
     # Compute initial score
-    init_score = compute_score(segment=segment_align, ebsd=ebsd)
+    init_score = compute_score(
+        segment=segment_align,
+        ebsd=ebsd,
+        normalization=args.score_normalization,
+    )
     print("Init score : {0:.4f}".format(init_score))
 
     # Create initial mesh grid
@@ -146,7 +160,11 @@ def __main__(args=None):
                                                polynom=args.polynom,
                                                use_img_magic=args.image_magic)
 
-            score = compute_score(segment=segment_align, ebsd=ebsd_distord)
+            score = compute_score(
+                segment=segment_align,
+                ebsd=ebsd_distord,
+                normalization=args.score_normalization,
+            )
             all_scores.append(score)
 
             # Make the score negative as it is a minimization process
@@ -184,8 +202,11 @@ def __main__(args=None):
                                           polynom=args.polynom,
                                           verbose=True)
 
-    best_score = compute_score(segment=segment_align,
-                               ebsd=final_ebsd)
+    best_score = compute_score(
+        segment=segment_align,
+        ebsd=final_ebsd,
+        normalization=args.score_normalization,
+    )
     print("Final best score : {0:.4f}".format(best_score))
 
     ##############

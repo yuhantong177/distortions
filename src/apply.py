@@ -32,6 +32,16 @@ def __main__(args=None):
 
         parser.add_argument("-phase_name", type=str, default="Prec", help="Define the phase name for the ang file")
         parser.add_argument("-phase_formula", type=str, default="NiAl", help="Define the phase formula for the ang file")
+        parser.add_argument(
+            "-score_normalization",
+            type=str,
+            default="dice",
+            choices=["dice", "min"],
+            help=(
+                "Overlap score normalization. Use 'min' to normalize by the smaller mask "
+                "when EBSD/SEMCL cover different areas to avoid scale collapse."
+            ),
+        )
 
         args = parser.parse_args()
 
@@ -48,7 +58,11 @@ def __main__(args=None):
                                           tx=align_conf["translate"][0], ty=align_conf["translate"][1],
                                           shape=ebsd.shape[::-1])
 
-        score_align = compute_score(segment=segment_align, ebsd=ebsd)
+        score_align = compute_score(
+            segment=segment_align,
+            ebsd=ebsd,
+            normalization=args.score_normalization,
+        )
         print("Score (Align): {0:.4f}".format(score_align))
 
     # Step 2: Distord data
@@ -63,7 +77,11 @@ def __main__(args=None):
                                               order=0,  # k-neighbour
                                               preserve_range=True)
 
-        score_align = compute_score(segment=segment_align, ebsd=ebsd_distord)
+        score_align = compute_score(
+            segment=segment_align,
+            ebsd=ebsd_distord,
+            normalization=args.score_normalization,
+        )
         print("Score (Distord): {0:.4f}".format(score_align))
 
     # Step 4: Dump results
