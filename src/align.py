@@ -331,7 +331,21 @@ def __main__(args=None):
     plt.imshow(ebsd, interpolation='nearest', cmap=cm.jet, alpha=foreground_alpha)
     if getattr(args, "overlay_segment_outline", False):
         ax = plt.gca()
-        non_zero_indices = np.argwhere(best_segment > 0)
+        # Track the transformed bounds of the original segment image by
+        # applying the same operations to a solid mask. This avoids using the
+        # segmentation content itself (which may contain holes) so the
+        # rectangle consistently outlines the full image canvas as it is
+        # rescaled/rotated/translated during the search.
+        outline_mask = np.ones_like(segment_raw, dtype=np.uint8) * 255
+        outline_mask = Aligner.rescale(outline_mask, rescale)
+        outline_mask = Aligner.rotate(outline_mask, angle)
+        outline_mask = Aligner.translate(
+            segment=outline_mask,
+            tx=tx,
+            ty=ty,
+            shape=ebsd.shape[::-1],
+        )
+        non_zero_indices = np.argwhere(outline_mask > 0)
         if non_zero_indices.size:
             y_min, x_min = non_zero_indices.min(axis=0)
             y_max, x_max = non_zero_indices.max(axis=0)
