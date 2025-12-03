@@ -31,7 +31,7 @@ def main() -> None:
 #     config_path = repo_root / "conf/AM718.align.conf"
 # =============================================================================
     seg_ref_path = repo_root / "data/RV/segment.align/segment.align.0.png"
-    ebsd_ref_path = repo_root / "data/RV/binary_semcl_halfstone_floyd_cropped_compress.png"
+    ebsd_ref_path = repo_root / "data/RV/denoised_SEMCL_psfsize51_sigma15_iter20_cropped_threshold 170-255 compressed.png"
     # Set to ``None`` if you do not have ANG metadata and only need the PNG outputs.
     ang_ref_path = None
     out_dir = repo_root / "data/RV/out"

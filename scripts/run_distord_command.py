@@ -31,7 +31,7 @@ def main() -> None:
 #     config_path = repo_root / "conf/AM718.align.conf"
 # =============================================================================
     seg_ref_path = repo_root / "data/RV/segment.align/segment.align.0.png"
-    ebsd_ref_path = repo_root / "data/RV/binary_ebsd_halfstone_floyd_maskout_black_compress.png"
+    ebsd_ref_path = repo_root / "data/RV/EBSD threshold 184-255 compressed.png"
     # Set to ``None`` if you do not have ANG metadata and only need the PNG outputs.
     ang_ref_path = None
     out_dir = repo_root / "data/RV/out"
@@ -40,12 +40,12 @@ def main() -> None:
     # we are working with when editing the script.
     config_path = repo_root / "conf/RV.align.conf"
     xp_id = 0
-    mesh_step = 65
+    mesh_step = 45
     mesh_std = 5
-    num_sampling = 2000
+    num_sampling = 5000
     polynom = 3
-    alpha_foreground = 0.5 # transparency between 0-1
-    alpha_background = 0.5 # transparency between 0-1
+    alpha_foreground = 0.4 # transparency between 0-1
+    alpha_background = 1 # transparency between 0-1
     out_dir.mkdir(parents=True, exist_ok=True)
 
     command = [

@@ -34,7 +34,7 @@ PARAMS = {
 
     # --- Output bit depth ---
     # 16 (recommended for SEM) or 8
-    "save_bitdepth": 16,
+    "save_bitdepth": 8,
 
     # --- I/O ---
     "input_path": None,
@@ -206,6 +206,6 @@ if __name__ == "__main__":
     # adjust to your repo layout as before
     repo_root = Path(__file__).resolve().parent.parent
     # 👉 PUT YOUR FILE PATHS HERE (NO trailing commas!)
-    PARAMS["input_path"]  = repo_root / "data/RV/sem_cl_superimposed_reduced.tif"
-    PARAMS["output_path"] = repo_root / "data/RV/denoised_sem_cl_superimposed.png"
+    PARAMS["input_path"]  = repo_root / "data/RV/1700X  AOI CL No Filter 1.tif"
+    PARAMS["output_path"] = repo_root / "data/RV/denoised_SEMCL.png"
     run()
