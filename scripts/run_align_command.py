@@ -30,6 +30,8 @@ def main() -> None:
     align_dir = repo_root / "data/RV/segment.align"
     out_dir = repo_root / "data/RV/out"    
     xp_id = 0
+    alpha_foreground = 0.3 # transparency between 0-1
+    alpha_background = 1 # transparency between 0-1
 
     align_dir.mkdir(parents=True, exist_ok=True)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -50,6 +52,10 @@ def main() -> None:
         str(out_dir),
         "-id_xp",
         str(xp_id),
+        "--overlay_foreground_alpha",
+        str(alpha_foreground),
+        "--overlay_background_alpha",
+        str(alpha_background),
     ]
 
     print(f"Configuration template: {config_path}")

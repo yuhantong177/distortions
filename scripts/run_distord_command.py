@@ -44,7 +44,8 @@ def main() -> None:
     mesh_std = 5
     num_sampling = 2000
     polynom = 3
-
+    alpha_foreground = 0.5 # transparency between 0-1
+    alpha_background = 0.5 # transparency between 0-1
     out_dir.mkdir(parents=True, exist_ok=True)
 
     command = [
@@ -67,6 +68,10 @@ def main() -> None:
         str(num_sampling),
         "-polynom",
         str(polynom),
+        "--overlay_foreground_alpha",
+        str(alpha_foreground),
+        "--overlay_background_alpha",
+        str(alpha_background),
     ]
 
     if ang_ref_path is not None:
