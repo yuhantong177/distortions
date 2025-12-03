@@ -127,6 +127,14 @@ def __main__(args=None):
             default=0.5,
             help="Alpha (0-1) for the EBSD foreground when saving the overlay image.",
         )
+        parser.add_argument(
+            "--overlay_segment_outline",
+            action="store_true",
+            help=(
+                "Draw a contour of the aligned segmentation on the overlay output. "
+                "The outline is diagnostic only and does not change the saved aligned PNG or the score."
+            ),
+        )
 
         args = parser.parse_args()
 
@@ -320,6 +328,8 @@ def __main__(args=None):
     fig = plt.figure(figsize=(15, 8))
     plt.imshow(best_segment, interpolation='nearest', cmap=cm.gray, alpha=background_alpha)
     plt.imshow(ebsd, interpolation='nearest', cmap=cm.jet, alpha=foreground_alpha)
+    if getattr(args, "overlay_segment_outline", False):
+        plt.contour(best_segment, levels=[128], colors=["orange"], linewidths=0.8)
     fig.savefig(out_image)
 
     # Store align segment

@@ -153,7 +153,23 @@ class Aligner(object):
             # centre rotates the full rectangle without distortion.
             center_rotation = (segment.shape[1] / 2, segment.shape[0] / 2)
             m_rot = cv2.getRotationMatrix2D(center_rotation, angle, 1)
-            segment = cv2.warpAffine(segment, m_rot, segment.shape[::-1])
+
+            # Compute an output canvas that is large enough to contain the whole
+            # rotated image so corners are not cropped off. This keeps
+            # downstream alignment/scoring logic unchanged because translation
+            # is still applied against the EBSD-sized output later on.
+            abs_cos = abs(m_rot[0, 0])
+            abs_sin = abs(m_rot[0, 1])
+            h, w = segment.shape[:2]
+            bound_w = int(np.ceil(h * abs_sin + w * abs_cos))
+            bound_h = int(np.ceil(h * abs_cos + w * abs_sin))
+
+            # Shift the rotation matrix so the rotated image stays centred
+            # within the expanded canvas.
+            m_rot[0, 2] += bound_w / 2 - center_rotation[0]
+            m_rot[1, 2] += bound_h / 2 - center_rotation[1]
+
+            segment = cv2.warpAffine(segment, m_rot, (bound_w, bound_h))
 
         return segment
 

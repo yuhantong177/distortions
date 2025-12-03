@@ -59,6 +59,8 @@ In order to find the best linear alignment, it performs a grid search over 3 par
 
 The rescale parameters can either be fixed (historical behaviour) or described as ranges so the script can try multiple scale combinations during the search. Only the segmented SEM/CL/BSE image is rescaled during this step—the EBSD speckle stays at its native pixel size so the grid search always works in EBSD coordinates.
 
+Rotation uses OpenCV's convention: positive angles rotate the **segmented** image counterclockwise about its own centre while the EBSD reference stays fixed. The rotated segmentation is padded so its corners remain visible before translation into the EBSD frame.
+
 This script relies on a json config file (e..g conf/AM718.conf).
 
 ```
@@ -131,6 +133,8 @@ align.py dumps:
  - ${align_dir}/segment.align.${xp_id}.png: segmented electron data that best fit the current EBSD speckle
  - ${out_dir}/overlap.align.${xp_id}.png: the overlap between the re-align segmented electron image and the EBSD image before correction
  - ${out_dir}/affine.${xp_id}.json: the parameters of the linear transformation (json file)
+
+Add ``--overlay_segment_outline`` to the ``align.py`` command (or set ``show_segment_outline`` to ``True`` in ``scripts/run_align_command.py``) to draw an orange contour of the aligned segmentation on the overlay image without altering the score or the saved ``segment.align`` PNG.
 
 ### Distord
 The next step is to find the undistord that will macth the EBSD speckles to the segmented electron data0.
