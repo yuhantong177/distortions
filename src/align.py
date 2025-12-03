@@ -4,6 +4,7 @@ import json
 import numpy as np
 
 from matplotlib import pyplot as plt, cm
+from matplotlib.patches import Rectangle
 from src.misc.tools import Aligner, compute_score
 import argparse
 
@@ -131,7 +132,7 @@ def __main__(args=None):
             "--overlay_segment_outline",
             action="store_true",
             help=(
-                "Draw a contour of the aligned segmentation on the overlay output. "
+                "Draw an orange rectangle around the aligned segmentation image on the overlay output. "
                 "The outline is diagnostic only and does not change the saved aligned PNG or the score."
             ),
         )
@@ -329,7 +330,18 @@ def __main__(args=None):
     plt.imshow(best_segment, interpolation='nearest', cmap=cm.gray, alpha=background_alpha)
     plt.imshow(ebsd, interpolation='nearest', cmap=cm.jet, alpha=foreground_alpha)
     if getattr(args, "overlay_segment_outline", False):
-        plt.contour(best_segment, levels=[128], colors=["orange"], linewidths=0.8)
+        ax = plt.gca()
+        height, width = best_segment.shape[:2]
+        ax.add_patch(
+            Rectangle(
+                xy=(0, 0),
+                width=width,
+                height=height,
+                fill=False,
+                edgecolor="orange",
+                linewidth=0.8,
+            )
+        )
     fig.savefig(out_image)
 
     # Store align segment

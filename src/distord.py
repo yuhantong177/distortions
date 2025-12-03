@@ -5,6 +5,7 @@ import cv2
 
 from distutils.util import strtobool
 from matplotlib import pyplot as plt, cm
+from matplotlib.patches import Rectangle
 import argparse
 
 from src.misc.tools import compute_score, apply_distortion
@@ -81,6 +82,14 @@ def __main__(args=None):
             type=float,
             default=0.5,
             help="Alpha (0-1) for the EBSD foreground when saving the overlay image.",
+        )
+        parser.add_argument(
+            "--overlay_segment_outline",
+            action="store_true",
+            help=(
+                "Draw an orange rectangle around the aligned segmentation image on the overlay output. "
+                "The outline is diagnostic only and does not change the saved aligned PNG or the score."
+            ),
         )
 
         args = parser.parse_args()
@@ -242,6 +251,19 @@ def __main__(args=None):
     fig = plt.figure(figsize=(15, 8))
     plt.imshow(segment_align, interpolation='nearest', cmap=cm.gray, alpha=background_alpha)
     plt.imshow(final_ebsd, interpolation='nearest', cmap=cm.jet, alpha=foreground_alpha)
+    if getattr(args, "overlay_segment_outline", False):
+        ax = plt.gca()
+        height, width = segment_align.shape[:2]
+        ax.add_patch(
+            Rectangle(
+                xy=(0, 0),
+                width=width,
+                height=height,
+                fill=False,
+                edgecolor="orange",
+                linewidth=0.8,
+            )
+        )
     fig.savefig(out_image)
 
     # Plot the mesh over the distorted image
