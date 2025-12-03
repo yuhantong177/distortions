@@ -4,7 +4,7 @@ import json
 import numpy as np
 
 from matplotlib import pyplot as plt, cm
-from matplotlib.patches import Rectangle
+from matplotlib.patches import Polygon
 from src.misc.tools import Aligner, compute_score
 import argparse
 
@@ -331,34 +331,61 @@ def __main__(args=None):
     plt.imshow(ebsd, interpolation='nearest', cmap=cm.jet, alpha=foreground_alpha)
     if getattr(args, "overlay_segment_outline", False):
         ax = plt.gca()
-        # Track the transformed bounds of the original segment image by
-        # applying the same operations to a solid mask. This avoids using the
-        # segmentation content itself (which may contain holes) so the
-        # rectangle consistently outlines the full image canvas as it is
-        # rescaled/rotated/translated during the search.
-        outline_mask = np.ones_like(segment_raw, dtype=np.uint8) * 255
-        outline_mask = Aligner.rescale(outline_mask, rescale)
-        outline_mask = Aligner.rotate(outline_mask, angle)
-        outline_mask = Aligner.translate(
-            segment=outline_mask,
-            tx=tx,
-            ty=ty,
-            shape=ebsd.shape[::-1],
-        )
-        non_zero_indices = np.argwhere(outline_mask > 0)
-        if non_zero_indices.size:
-            y_min, x_min = non_zero_indices.min(axis=0)
-            y_max, x_max = non_zero_indices.max(axis=0)
-            ax.add_patch(
-                Rectangle(
-                    xy=(x_min, y_min),
-                    width=(x_max - x_min + 1),
-                    height=(y_max - y_min + 1),
-                    fill=False,
-                    edgecolor="orange",
-                    linewidth=0.8,
-                )
+        # Track the transformed bounds of the original segment canvas by
+        # applying the same rescale/rotate/translate sequence to its corner
+        # coordinates. Drawing the resulting quadrilateral preserves the
+        # orientation of the original image instead of collapsing to an axis-
+        # aligned bounding box.
+        def _transformed_corners(shape, rescale_vals, rot_angle, trans_x, trans_y):
+            height, width = shape
+            corners = np.array(
+                [
+                    [0, 0],
+                    [width, 0],
+                    [width, height],
+                    [0, height],
+                ],
+                dtype=np.float32,
             )
+
+            # Rescale the canvas corners.
+            corners[:, 0] *= rescale_vals[0]
+            corners[:, 1] *= rescale_vals[1]
+            scaled_width = width * rescale_vals[0]
+            scaled_height = height * rescale_vals[1]
+
+            if rot_angle != 0:
+                center_rotation = (scaled_width / 2.0, scaled_height / 2.0)
+                m_rot = cv2.getRotationMatrix2D(center_rotation, rot_angle, 1)
+
+                abs_cos = abs(m_rot[0, 0])
+                abs_sin = abs(m_rot[0, 1])
+                bound_w = float(np.ceil(scaled_height * abs_sin + scaled_width * abs_cos))
+                bound_h = float(np.ceil(scaled_height * abs_cos + scaled_width * abs_sin))
+
+                m_rot[0, 2] += bound_w / 2.0 - center_rotation[0]
+                m_rot[1, 2] += bound_h / 2.0 - center_rotation[1]
+
+                corners = cv2.transform(corners[None, :, :], m_rot)[0]
+            else:
+                bound_w, bound_h = scaled_width, scaled_height
+
+            # Translate onto the EBSD canvas.
+            corners[:, 0] += trans_x
+            corners[:, 1] += trans_y
+
+            return corners
+
+        outline = _transformed_corners(segment_raw.shape, rescale, angle, tx, ty)
+        ax.add_patch(
+            Polygon(
+                outline,
+                closed=True,
+                fill=False,
+                edgecolor="orange",
+                linewidth=0.8,
+            )
+        )
     fig.savefig(out_image)
 
     # Store align segment
