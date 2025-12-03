@@ -331,17 +331,20 @@ def __main__(args=None):
     plt.imshow(ebsd, interpolation='nearest', cmap=cm.jet, alpha=foreground_alpha)
     if getattr(args, "overlay_segment_outline", False):
         ax = plt.gca()
-        height, width = best_segment.shape[:2]
-        ax.add_patch(
-            Rectangle(
-                xy=(0, 0),
-                width=width,
-                height=height,
-                fill=False,
-                edgecolor="orange",
-                linewidth=0.8,
+        non_zero_indices = np.argwhere(best_segment > 0)
+        if non_zero_indices.size:
+            y_min, x_min = non_zero_indices.min(axis=0)
+            y_max, x_max = non_zero_indices.max(axis=0)
+            ax.add_patch(
+                Rectangle(
+                    xy=(x_min, y_min),
+                    width=(x_max - x_min + 1),
+                    height=(y_max - y_min + 1),
+                    fill=False,
+                    edgecolor="orange",
+                    linewidth=0.8,
+                )
             )
-        )
     fig.savefig(out_image)
 
     # Store align segment
