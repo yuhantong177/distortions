@@ -44,6 +44,7 @@ def main() -> None:
     mesh_std = 5
     num_sampling = 2000
     polynom = 3
+    show_image_outline = False  # set to True to draw the orange rectangle showing the segment bounds on the overlay
 
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -73,6 +74,9 @@ def main() -> None:
 
     if ang_ref_path is not None:
         command.extend(["-ang_ref_path", str(ang_ref_path)])
+
+    if show_image_outline:
+        command.append("--overlay_segment_outline")
 
     print(f"Configuration template: {config_path}")
     print("Running:", " ".join(command))
