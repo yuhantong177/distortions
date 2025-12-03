@@ -46,7 +46,7 @@ def main() -> None:
     polynom = 3
     alpha_foreground = 0.4 # transparency between 0-1
     alpha_background = 1 # transparency between 0-1
-    show_segment_outline = False  # set to False to hide the orange contour on the overlay
+    show_image_outline = False  # set to False to hide the orange rectangle showing the segment bounds on the overlay
     
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -79,7 +79,7 @@ def main() -> None:
     if ang_ref_path is not None:
         command.extend(["-ang_ref_path", str(ang_ref_path)])
 
-    if show_segment_outline:
+    if show_image_outline:
         command.append("--overlay_segment_outline")
 
     print(f"Configuration template: {config_path}")
