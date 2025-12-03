@@ -253,7 +253,12 @@ def __main__(args=None):
     plt.imshow(final_ebsd, interpolation='nearest', cmap=cm.jet, alpha=foreground_alpha)
     if getattr(args, "overlay_segment_outline", False):
         ax = plt.gca()
-        non_zero_indices = np.argwhere(segment_align > 0)
+        # Outline the full aligned segment canvas instead of its non-zero
+        # pixels. Using a solid mask guarantees the rectangle reflects the
+        # original image bounds regardless of internal holes in the
+        # segmentation data.
+        outline_mask = np.ones_like(segment_align, dtype=np.uint8) * 255
+        non_zero_indices = np.argwhere(outline_mask > 0)
         if non_zero_indices.size:
             y_min, x_min = non_zero_indices.min(axis=0)
             y_max, x_max = non_zero_indices.max(axis=0)
