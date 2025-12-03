@@ -147,7 +147,11 @@ class Aligner(object):
     def rotate(segment, angle):
 
         if angle != 0:
-            center_rotation = (segment.shape[0] / 2, segment.shape[1] / 2)
+            # OpenCV expects the rotation centre as (x, y) = (cols, rows).
+            # The previous implementation swapped the axes, which produced a
+            # slight shearing/warping effect when rotating. Using the correct
+            # centre rotates the full rectangle without distortion.
+            center_rotation = (segment.shape[1] / 2, segment.shape[0] / 2)
             m_rot = cv2.getRotationMatrix2D(center_rotation, angle, 1)
             segment = cv2.warpAffine(segment, m_rot, segment.shape[::-1])
 

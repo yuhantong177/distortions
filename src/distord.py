@@ -70,6 +70,18 @@ def __main__(args=None):
                 "when EBSD/SEMCL cover different areas to avoid scale collapse."
             ),
         )
+        parser.add_argument(
+            "--overlay_background_alpha",
+            type=float,
+            default=1.0,
+            help="Alpha (0-1) for the SEMCL/segmented background when saving the overlay image.",
+        )
+        parser.add_argument(
+            "--overlay_foreground_alpha",
+            type=float,
+            default=0.5,
+            help="Alpha (0-1) for the EBSD foreground when saving the overlay image.",
+        )
 
         args = parser.parse_args()
 
@@ -97,6 +109,14 @@ def __main__(args=None):
     # Load ebsd/segment. Note that the segment must be preprocess with align.py
     segment_align = _load_grayscale_image(args.seg_ref_path, "aligned segmentation")
     ebsd = _load_grayscale_image(args.ebsd_ref_path, "EBSD reference")
+
+    def _validate_alpha(value, label):
+        if not 0.0 <= value <= 1.0:
+            raise ValueError("{label} must be between 0 and 1 inclusive.".format(label=label))
+        return value
+
+    background_alpha = _validate_alpha(args.overlay_background_alpha, "overlay_background_alpha")
+    foreground_alpha = _validate_alpha(args.overlay_foreground_alpha, "overlay_foreground_alpha")
 
     if segment_align.shape != ebsd.shape:
         raise SystemExit(
@@ -220,8 +240,8 @@ def __main__(args=None):
 
     # Plot how ebsd/segment overlap
     fig = plt.figure(figsize=(15, 8))
-    plt.imshow(segment_align, interpolation='nearest', cmap=cm.gray)
-    plt.imshow(final_ebsd, interpolation='nearest', cmap=cm.jet, alpha=0.5)
+    plt.imshow(segment_align, interpolation='nearest', cmap=cm.gray, alpha=background_alpha)
+    plt.imshow(final_ebsd, interpolation='nearest', cmap=cm.jet, alpha=foreground_alpha)
     fig.savefig(out_image)
 
     # Plot the mesh over the distorted image
