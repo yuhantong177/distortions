@@ -36,6 +36,7 @@ def main() -> None:
     xp_id = 0
     alpha_foreground = 0.4 # transparency between 0-1
     alpha_background = 1 # transparency between 0-1
+    show_segment_outline = False  # set to False to hide the orange contour on the overlay
 
     align_dir.mkdir(parents=True, exist_ok=True)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -63,6 +64,9 @@ def main() -> None:
         "--overlay_background_alpha",
         str(alpha_background),
     ]
+
+    if show_segment_outline:
+        command.append("--overlay_segment_outline")
 
     print(f"Configuration template: {config_path}")
     print("Running:", " ".join(command))
