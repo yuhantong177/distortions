@@ -36,7 +36,7 @@ def main() -> None:
     xp_id = 0
     alpha_foreground = 0.4 # transparency between 0-1
     alpha_background = 1 # transparency between 0-1
-    show_image_outline = False  # set to False to hide the orange rectangle showing the segment bounds on the overlay
+    show_image_outline = True  # set to False to hide the orange rectangle showing the segment bounds on the overlay
 
     align_dir.mkdir(parents=True, exist_ok=True)
     out_dir.mkdir(parents=True, exist_ok=True)

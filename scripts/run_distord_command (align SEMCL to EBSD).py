@@ -44,7 +44,7 @@ def main() -> None:
     mesh_std = 5
     num_sampling = 2000
     polynom = 3
-    show_image_outline = False  # set to True to draw the orange rectangle showing the segment bounds on the overlay
+    show_image_outline = True  # set to True to draw the orange rectangle showing the segment bounds on the overlay
 
     out_dir.mkdir(parents=True, exist_ok=True)
 
