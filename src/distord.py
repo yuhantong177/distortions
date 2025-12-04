@@ -1,11 +1,12 @@
 import numpy as np
 
 import os
+import re
 import cv2
 
 from distutils.util import strtobool
 from matplotlib import pyplot as plt, cm
-from matplotlib.patches import Rectangle
+from matplotlib.patches import Polygon
 import argparse
 
 from src.misc.tools import compute_score, apply_distortion
@@ -253,20 +254,92 @@ def __main__(args=None):
     plt.imshow(final_ebsd, interpolation='nearest', cmap=cm.jet, alpha=foreground_alpha)
     if getattr(args, "overlay_segment_outline", False):
         ax = plt.gca()
-        non_zero_indices = np.argwhere(segment_align > 0)
-        if non_zero_indices.size:
-            y_min, x_min = non_zero_indices.min(axis=0)
-            y_max, x_max = non_zero_indices.max(axis=0)
-            ax.add_patch(
-                Rectangle(
-                    xy=(x_min, y_min),
-                    width=(x_max - x_min + 1),
-                    height=(y_max - y_min + 1),
-                    fill=False,
-                    edgecolor="orange",
-                    linewidth=0.8,
-                )
+        # Keep the same outline produced during alignment by transforming the
+        # original segment canvas corners with the saved affine parameters when
+        # available. This preserves the rectangle orientation instead of
+        # collapsing to an axis-aligned box and ensures the outline does not
+        # move when only the EBSD image is warped.
+        def _transformed_corners(shape, rescale_vals, rot_angle, trans_x, trans_y):
+            height, width = shape
+            corners = np.array(
+                [
+                    [0, 0],
+                    [width, 0],
+                    [width, height],
+                    [0, height],
+                ],
+                dtype=np.float32,
             )
+
+            corners[:, 0] *= rescale_vals[0]
+            corners[:, 1] *= rescale_vals[1]
+            scaled_width = width * rescale_vals[0]
+            scaled_height = height * rescale_vals[1]
+
+            if rot_angle != 0:
+                center_rotation = (scaled_width / 2.0, scaled_height / 2.0)
+                m_rot = cv2.getRotationMatrix2D(center_rotation, rot_angle, 1)
+
+                abs_cos = abs(m_rot[0, 0])
+                abs_sin = abs(m_rot[0, 1])
+                bound_w = float(np.ceil(scaled_height * abs_sin + scaled_width * abs_cos))
+                bound_h = float(np.ceil(scaled_height * abs_cos + scaled_width * abs_sin))
+
+                m_rot[0, 2] += bound_w / 2.0 - center_rotation[0]
+                m_rot[1, 2] += bound_h / 2.0 - center_rotation[1]
+
+                corners = cv2.transform(corners[None, :, :], m_rot)[0]
+
+            corners[:, 0] += trans_x
+            corners[:, 1] += trans_y
+
+            return corners
+
+        def _load_affine_from_segment(seg_path):
+            base_dir = os.path.dirname(seg_path)
+            filename = os.path.basename(seg_path)
+            candidates = []
+
+            match = re.search(r"segment\\.align\\.(\\d+)\\.[^.]+$", filename)
+            if match:
+                candidates.append(os.path.join(base_dir, "affine.{id}.json".format(id=match.group(1))))
+            candidates.append(os.path.join(base_dir, "affine.json"))
+
+            for candidate in candidates:
+                if os.path.exists(candidate):
+                    with open(candidate, "rb") as affine_file:
+                        return json.loads(affine_file.read())
+            return None
+
+        outline = None
+        affine = _load_affine_from_segment(args.seg_ref_path)
+        if affine:
+            rescale_vals = tuple(affine.get("rescale", (1.0, 1.0)))
+            trans_x, trans_y = affine.get("translate", (0, 0))
+            rot_angle = float(affine.get("angle", 0.0))
+            base_shape = tuple(affine.get("segment_shape", segment_align.shape[:2]))
+            outline = _transformed_corners(base_shape, rescale_vals, rot_angle, trans_x, trans_y)
+        else:
+            height, width = segment_align.shape
+            outline = np.array(
+                [
+                    [0, 0],
+                    [width, 0],
+                    [width, height],
+                    [0, height],
+                ],
+                dtype=np.float32,
+            )
+
+        ax.add_patch(
+            Polygon(
+                outline,
+                closed=True,
+                fill=False,
+                edgecolor="orange",
+                linewidth=0.8,
+            )
+        )
     fig.savefig(out_image)
 
     # Plot the mesh over the distorted image
