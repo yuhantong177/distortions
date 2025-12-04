@@ -397,6 +397,7 @@ def __main__(args=None):
         data = dict(score=best_score,
                     ebsd=os.path.basename(args.ebsd_ref_path),
                     segment=os.path.basename(args.seg_ref_path),
+                    segment_shape=list(segment_raw.shape[:2]),
                     conf=conf,
                     rescale=rescale,
                     translate=[int(tx), int(ty)],

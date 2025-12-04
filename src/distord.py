@@ -317,7 +317,8 @@ def __main__(args=None):
             rescale_vals = tuple(affine.get("rescale", (1.0, 1.0)))
             trans_x, trans_y = affine.get("translate", (0, 0))
             rot_angle = float(affine.get("angle", 0.0))
-            outline = _transformed_corners(segment_align.shape, rescale_vals, rot_angle, trans_x, trans_y)
+            base_shape = tuple(affine.get("segment_shape", segment_align.shape[:2]))
+            outline = _transformed_corners(base_shape, rescale_vals, rot_angle, trans_x, trans_y)
         else:
             height, width = segment_align.shape
             outline = np.array(
