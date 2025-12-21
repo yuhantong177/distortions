@@ -34,7 +34,7 @@ def main() -> None:
     align_dir = repo_root / "data/RV/segment.align"
     out_dir = repo_root / "data/RV/out"
     xp_id = 0
-    alpha_foreground = 0.4 # transparency between 0-1
+    alpha_foreground = 0.2 # transparency between 0-1
     alpha_background = 1 # transparency between 0-1
     show_image_outline = True  # set to False to hide the orange rectangle showing the segment bounds on the overlay
 

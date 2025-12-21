@@ -43,13 +43,13 @@ def main() -> None:
     # we are working with when editing the script.
     config_path = repo_root / "conf/RV.align.conf"
     xp_id = 0
-    mesh_step = 45
+    mesh_step = 55
     mesh_std = 5
     num_sampling = 2000
     polynom = 3
-    alpha_foreground = 0.4 # transparency between 0-1
+    alpha_foreground = 0.2 # transparency between 0-1
     alpha_background = 1 # transparency between 0-1
-    show_image_outline = True  # set to False to hide the orange rectangle showing the segment bounds on the overlay
+    show_image_outline = False  # set to False to hide the orange rectangle showing the segment bounds on the overlay
     
     out_dir.mkdir(parents=True, exist_ok=True)
 
