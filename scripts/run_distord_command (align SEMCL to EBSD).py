@@ -45,6 +45,8 @@ def main() -> None:
     num_sampling = 2000
     polynom = 3
     show_image_outline = True  # set to True to draw the orange rectangle showing the segment bounds on the overlay
+    include_axes = False
+    figure_dpi = 300
 
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -70,6 +72,8 @@ def main() -> None:
         str(polynom),
         "-score_normalization",
         "min",
+        "--figure_dpi",
+        str(figure_dpi),
     ]
 
     if ang_ref_path is not None:
@@ -77,6 +81,9 @@ def main() -> None:
 
     if show_image_outline:
         command.append("--overlay_segment_outline")
+
+    if not include_axes:
+        command.append("--hide_axes")
 
     print(f"Configuration template: {config_path}")
     print("Running:", " ".join(command))
