@@ -24,12 +24,12 @@ def main() -> None:
 #     align_dir = repo_root / "data/AM718/segment.align"
 #     out_dir = repo_root / "data/AM718/out"
 # =============================================================================
+    seg_ref_path = repo_root / "data/RV/ebsd and semcl archive/binary_semcl_halfstone_floyd_cropped_compress.png"
+    ebsd_ref_path = repo_root / "data/RV/ebsd and semcl archive/binary_ebsd_halfstone_floyd_maskout_black_compress.png"
 # =============================================================================
-#     seg_ref_path = repo_root / "data/RV/binary_semcl_halfstone_floyd_cropped_compress.png"
-#     ebsd_ref_path = repo_root / "data/RV/binary_ebsd_halfstone_floyd_maskout_black_compress.png"
+#     seg_ref_path = repo_root / "data/RV/denoised_SEMCL_psfsize51_sigma15_iter20_cropped_threshold 170-255 compressed.png"
+#     ebsd_ref_path = repo_root / "data/RV/EBSD threshold 184-255 compressed.png"
 # =============================================================================
-    seg_ref_path = repo_root / "data/RV/denoised_SEMCL_psfsize51_sigma15_iter20_cropped_threshold 170-255 compressed.png"
-    ebsd_ref_path = repo_root / "data/RV/EBSD threshold 184-255 compressed.png"
     config_path = repo_root / "conf/RV.align.conf"
     align_dir = repo_root / "data/RV/segment.align"
     out_dir = repo_root / "data/RV/out"

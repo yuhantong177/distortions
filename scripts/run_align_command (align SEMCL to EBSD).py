@@ -28,9 +28,13 @@ def main() -> None:
 #     seg_ref_path = repo_root / "data/RV/binary_ebsd_halfstone_floyd_maskout_black_compress.png" # switched between "seg" and "ebsd" 
 #     ebsd_ref_path = repo_root / "data/RV/binary_semcl_halfstone_floyd_cropped_compress.png"# switched between "seg" and "ebsd"
 # =============================================================================
-    seg_ref_path = repo_root / "data/RV/EBSD threshold 184-255 compressed.png" # switched between "seg" and "ebsd" 
-    ebsd_ref_path = repo_root / "data/RV/denoised_SEMCL_psfsize51_sigma15_iter20_cropped_threshold 170-255 compressed.png"# switched between "seg" and "ebsd"
-    config_path = repo_root / "conf/RV.align SEMCL to EBSD.conf"
+    seg_ref_path = repo_root / "data/RV/EBSD raw subset 9 maxentropy.png" # switched between "seg" and "ebsd" 
+    ebsd_ref_path = repo_root / "data/RV/SEMCL cropped for intensity analysis maxentropy compressed.png"# switched between "seg" and "ebsd"
+# =============================================================================
+#     seg_ref_path = r"C:\Users\yuhan\Box\ChoyLab\Group members\Andrew\EBSD help Ricardo\epma_binary_compress.png"
+#     ebsd_ref_path = r"C:\Users\yuhan\Box\ChoyLab\Group members\Andrew\EBSD help Ricardo\semcl_nathans_mod_ML_results_imagej_modified-1 compress.png"
+# =============================================================================
+    config_path = repo_root / "conf/RV.align9.conf"
     align_dir = repo_root / "data/RV/segment.align"
     out_dir = repo_root / "data/RV/out"    
     xp_id = 0

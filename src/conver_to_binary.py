@@ -29,8 +29,8 @@ repo_root = Path(__file__).resolve().parent.parent
 # =========================
 # CONFIG — EDIT THESE
 # =========================
-INPUT_PATH  = repo_root / "data/RV/denoised_ebsd.png"   # put your input TIF here
-OUTPUT_PATH = repo_root / "data/RV/binary_ebsd_halfstone_floyd.png"  # output PNG (binary 0/255)
+INPUT_PATH  = repo_root / "data/RV/SEMCL cropped for intensity analysis.tif"   # put your input TIF here
+OUTPUT_PATH = repo_root / "data/RV/binary_SEMCL_halfstone_floyd.png"  # output PNG (binary 0/255)
 
 # Optional preprocessing knobs (usually fine as-is)
 CLAHE_CLIP   = 0.01   # lower if dots look too dense (e.g., 0.006)
