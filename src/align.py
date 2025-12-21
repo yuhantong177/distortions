@@ -136,6 +136,17 @@ def __main__(args=None):
                 "The outline is diagnostic only and does not change the saved aligned PNG or the score."
             ),
         )
+        parser.add_argument(
+            "--hide_axes",
+            action="store_true",
+            help="Hide the X/Y axes when saving matplotlib figures.",
+        )
+        parser.add_argument(
+            "--figure_dpi",
+            type=int,
+            default=300,
+            help="Resolution (DPI) used when saving matplotlib figures.",
+        )
 
         args = parser.parse_args()
 
@@ -386,7 +397,9 @@ def __main__(args=None):
                 linewidth=0.8,
             )
         )
-    fig.savefig(out_image)
+    if getattr(args, "hide_axes", False):
+        plt.axis("off")
+    fig.savefig(out_image, dpi=getattr(args, "figure_dpi", None))
 
     # Store align segment
     filename_out = os.path.join(args.align_dir, "segment.align.{}.png".format(args.id_xp))
