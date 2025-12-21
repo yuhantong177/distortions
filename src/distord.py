@@ -259,7 +259,13 @@ def __main__(args=None):
     plt.imshow(final_ebsd, cmap=cm.jet)
     if getattr(args, "hide_axes", False):
         plt.axis("off")
-    fig.savefig(out_distord, dpi=getattr(args, "figure_dpi", None))
+    fig.savefig(
+        out_distord,
+        dpi=getattr(args, "figure_dpi", None),
+        bbox_inches="tight",
+        pad_inches=0,
+        transparent=True,
+    )
 
     # Plot how ebsd/segment overlap
     fig = plt.figure(figsize=(15, 8))
@@ -355,7 +361,13 @@ def __main__(args=None):
         )
     if getattr(args, "hide_axes", False):
         plt.axis("off")
-    fig.savefig(out_image, dpi=getattr(args, "figure_dpi", None))
+    fig.savefig(
+        out_image,
+        dpi=getattr(args, "figure_dpi", None),
+        bbox_inches="tight",
+        pad_inches=0,
+        transparent=True,
+    )
 
     # Plot the mesh over the distorted image
     fig, ax = plt.subplots(figsize=(15, 8))
@@ -363,7 +375,13 @@ def __main__(args=None):
     ax.plot(targets[:, 0], targets[:, 1], '.')
     if getattr(args, "hide_axes", False):
         plt.axis("off")
-    fig.savefig(out_mesh, dpi=getattr(args, "figure_dpi", None))
+    fig.savefig(
+        out_mesh,
+        dpi=getattr(args, "figure_dpi", None),
+        bbox_inches="tight",
+        pad_inches=0,
+        transparent=True,
+    )
 
     # Store points for transformation
     with open(params_path, "w") as params_file:

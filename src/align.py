@@ -399,7 +399,13 @@ def __main__(args=None):
         )
     if getattr(args, "hide_axes", False):
         plt.axis("off")
-    fig.savefig(out_image, dpi=getattr(args, "figure_dpi", None))
+    fig.savefig(
+        out_image,
+        dpi=getattr(args, "figure_dpi", None),
+        bbox_inches="tight",
+        pad_inches=0,
+        transparent=True,
+    )
 
     # Store align segment
     filename_out = os.path.join(args.align_dir, "segment.align.{}.png".format(args.id_xp))
