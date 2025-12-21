@@ -37,6 +37,8 @@ def main() -> None:
     alpha_foreground = 0.2 # transparency between 0-1
     alpha_background = 1 # transparency between 0-1
     show_image_outline = True  # set to False to hide the orange rectangle showing the segment bounds on the overlay
+    include_axes = False
+    figure_dpi = 300
 
     align_dir.mkdir(parents=True, exist_ok=True)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -61,10 +63,15 @@ def main() -> None:
         str(alpha_foreground),
         "--overlay_background_alpha",
         str(alpha_background),
+        "--figure_dpi",
+        str(figure_dpi),
     ]
 
     if show_image_outline:
         command.append("--overlay_segment_outline")
+
+    if not include_axes:
+        command.append("--hide_axes")
 
     print(f"Configuration template: {config_path}")
     print("Running:", " ".join(command))

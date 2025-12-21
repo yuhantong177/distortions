@@ -92,6 +92,17 @@ def __main__(args=None):
                 "The outline is diagnostic only and does not change the saved aligned PNG or the score."
             ),
         )
+        parser.add_argument(
+            "--hide_axes",
+            action="store_true",
+            help="Hide the X/Y axes when saving matplotlib figures.",
+        )
+        parser.add_argument(
+            "--figure_dpi",
+            type=int,
+            default=300,
+            help="Resolution (DPI) used when saving matplotlib figures.",
+        )
 
         args = parser.parse_args()
 
@@ -245,8 +256,16 @@ def __main__(args=None):
 
     # Plot the final ebsd
     fig = plt.figure(figsize=(15, 8))
-    plt.imshow(final_ebsd)
-    fig.savefig(out_distord)
+    plt.imshow(final_ebsd, cmap=cm.jet)
+    if getattr(args, "hide_axes", False):
+        plt.axis("off")
+    fig.savefig(
+        out_distord,
+        dpi=getattr(args, "figure_dpi", None),
+        bbox_inches="tight",
+        pad_inches=0,
+        transparent=True,
+    )
 
     # Plot how ebsd/segment overlap
     fig = plt.figure(figsize=(15, 8))
@@ -340,13 +359,29 @@ def __main__(args=None):
                 linewidth=0.8,
             )
         )
-    fig.savefig(out_image)
+    if getattr(args, "hide_axes", False):
+        plt.axis("off")
+    fig.savefig(
+        out_image,
+        dpi=getattr(args, "figure_dpi", None),
+        bbox_inches="tight",
+        pad_inches=0,
+        transparent=True,
+    )
 
     # Plot the mesh over the distorted image
     fig, ax = plt.subplots(figsize=(15, 8))
-    ax.imshow(final_ebsd)
+    ax.imshow(final_ebsd, cmap=cm.jet)
     ax.plot(targets[:, 0], targets[:, 1], '.')
-    fig.savefig(out_mesh)
+    if getattr(args, "hide_axes", False):
+        plt.axis("off")
+    fig.savefig(
+        out_mesh,
+        dpi=getattr(args, "figure_dpi", None),
+        bbox_inches="tight",
+        pad_inches=0,
+        transparent=True,
+    )
 
     # Store points for transformation
     with open(params_path, "w") as params_file:
