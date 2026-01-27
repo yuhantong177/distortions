@@ -3,7 +3,7 @@ import cv2
 import json
 import numpy as np
 
-from matplotlib import pyplot as plt, cm
+from matplotlib import pyplot as plt, cm, colors
 from matplotlib.patches import Polygon
 from src.misc.tools import Aligner, compute_score
 import argparse
@@ -267,13 +267,31 @@ def __main__(args=None):
             return cm.get_cmap("gray")
         return cmap
 
-    def _apply_overlay_mask(image, threshold, cmap):
+    def _image_to_rgba(image, cmap, threshold, alpha):
         if threshold is None:
-            return image, cmap
-        masked = np.ma.masked_where(image <= threshold, image)
-        cmap = _copy_cmap(cmap)
-        cmap.set_bad(color=(0.0, 0.0, 0.0, 0.0))
-        return masked, cmap
+            mask = np.zeros_like(image, dtype=bool)
+        else:
+            mask = image <= threshold
+        if np.all(mask):
+            rgba = np.zeros((*image.shape, 4), dtype=np.float32)
+            return rgba, mask
+        norm = colors.Normalize(vmin=float(np.min(image)), vmax=float(np.max(image)))
+        rgba = cmap(norm(image))
+        rgba = np.array(rgba, dtype=np.float32)
+        rgba[..., 3] = np.where(mask, 0.0, alpha)
+        return rgba, mask
+
+    def _overlay_images(background, foreground, threshold, background_cmap, foreground_cmap, bg_alpha, fg_alpha):
+        background_rgba, background_mask = _image_to_rgba(
+            background, background_cmap, threshold, bg_alpha
+        )
+        foreground_rgba, foreground_mask = _image_to_rgba(
+            foreground, foreground_cmap, threshold, fg_alpha
+        )
+        composite = background_rgba[..., :3] * background_rgba[..., 3:4]
+        composite += foreground_rgba[..., :3] * foreground_rgba[..., 3:4]
+        composite = np.clip(composite, 0.0, 1.0)
+        return composite, background_mask & foreground_mask
 
     background_alpha = _validate_alpha(args.overlay_background_alpha, "overlay_background_alpha")
     foreground_alpha = _validate_alpha(args.overlay_foreground_alpha, "overlay_foreground_alpha")
@@ -431,23 +449,18 @@ def __main__(args=None):
     fig = plt.figure(figsize=(15, 8))
     background_cmap = _maybe_use_gray(background_cmap, best_segment, background_color_min)
     foreground_cmap = _maybe_use_gray(foreground_cmap, ebsd, foreground_color_min)
-    background_overlay, background_cmap = _apply_overlay_mask(
-        best_segment, overlay_mask_threshold, background_cmap
-    )
-    foreground_overlay, foreground_cmap = _apply_overlay_mask(
-        ebsd, overlay_mask_threshold, foreground_cmap
-    )
-    plt.imshow(
-        background_overlay,
-        interpolation='nearest',
-        cmap=background_cmap,
-        alpha=background_alpha,
+    overlay, _ = _overlay_images(
+        best_segment,
+        ebsd,
+        overlay_mask_threshold,
+        background_cmap,
+        foreground_cmap,
+        background_alpha,
+        foreground_alpha,
     )
     plt.imshow(
-        foreground_overlay,
+        overlay,
         interpolation='nearest',
-        cmap=foreground_cmap,
-        alpha=foreground_alpha,
     )
     if getattr(args, "overlay_segment_outline", False):
         ax = plt.gca()
