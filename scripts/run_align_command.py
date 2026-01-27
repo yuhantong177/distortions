@@ -38,6 +38,9 @@ def main() -> None:
     alpha_background = 1  # transparency between 0-1
     overlay_foreground_cmap = "Wistia"  # yellow-forward colormap for EBSD overlay
     overlay_background_cmap = "cool"  # cyan-forward colormap for SEMCL overlay
+    overlay_mask_threshold = 0  # mask <= threshold so binary zeros stay transparent
+    overlay_background_color_min = 0.05  # fallback to gray if the SEMCL image is very dark
+    overlay_foreground_color_min = 0.05  # fallback to gray if the EBSD image is very dark
     show_image_outline = True  # set to False to hide the orange rectangle showing the segment bounds on the overlay
     include_axes = False
     figure_dpi = 300
@@ -69,6 +72,12 @@ def main() -> None:
         overlay_foreground_cmap,
         "--overlay_background_cmap",
         overlay_background_cmap,
+        "--overlay_mask_threshold",
+        str(overlay_mask_threshold),
+        "--overlay_background_color_min",
+        str(overlay_background_color_min),
+        "--overlay_foreground_color_min",
+        str(overlay_foreground_color_min),
         "--figure_dpi",
         str(figure_dpi),
     ]
