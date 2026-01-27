@@ -79,10 +79,22 @@ def __main__(args=None):
             help="Alpha (0-1) for the SEMCL/segmented background when saving the overlay image.",
         )
         parser.add_argument(
+            "--overlay_background_cmap",
+            type=str,
+            default="gray",
+            help="Matplotlib colormap name for the SEMCL/segmented background on the overlay image.",
+        )
+        parser.add_argument(
             "--overlay_foreground_alpha",
             type=float,
             default=0.5,
             help="Alpha (0-1) for the EBSD foreground when saving the overlay image.",
+        )
+        parser.add_argument(
+            "--overlay_foreground_cmap",
+            type=str,
+            default="jet",
+            help="Matplotlib colormap name for the EBSD foreground on the overlay image.",
         )
         parser.add_argument(
             "--overlay_segment_outline",
@@ -136,8 +148,20 @@ def __main__(args=None):
             raise ValueError("{label} must be between 0 and 1 inclusive.".format(label=label))
         return value
 
+    def _resolve_cmap(name, label):
+        try:
+            return cm.get_cmap(name)
+        except ValueError as exc:
+            raise ValueError(
+                "{label} must be a valid Matplotlib colormap name (got '{name}').".format(
+                    label=label, name=name
+                )
+            ) from exc
+
     background_alpha = _validate_alpha(args.overlay_background_alpha, "overlay_background_alpha")
     foreground_alpha = _validate_alpha(args.overlay_foreground_alpha, "overlay_foreground_alpha")
+    background_cmap = _resolve_cmap(args.overlay_background_cmap, "overlay_background_cmap")
+    foreground_cmap = _resolve_cmap(args.overlay_foreground_cmap, "overlay_foreground_cmap")
 
     if segment_align.shape != ebsd.shape:
         raise SystemExit(
@@ -269,8 +293,8 @@ def __main__(args=None):
 
     # Plot how ebsd/segment overlap
     fig = plt.figure(figsize=(15, 8))
-    plt.imshow(segment_align, interpolation='nearest', cmap=cm.gray, alpha=background_alpha)
-    plt.imshow(final_ebsd, interpolation='nearest', cmap=cm.jet, alpha=foreground_alpha)
+    plt.imshow(segment_align, interpolation='nearest', cmap=background_cmap, alpha=background_alpha)
+    plt.imshow(final_ebsd, interpolation='nearest', cmap=foreground_cmap, alpha=foreground_alpha)
     if getattr(args, "overlay_segment_outline", False):
         ax = plt.gca()
         # Keep the same outline produced during alignment by transforming the

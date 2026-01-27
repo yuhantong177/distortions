@@ -38,8 +38,10 @@ def main() -> None:
     align_dir = repo_root / "data/RV/segment.align"
     out_dir = repo_root / "data/RV/out"    
     xp_id = 0
-    alpha_foreground = 0.2 # transparency between 0-1
-    alpha_background = 0.5 # transparency between 0-1
+    alpha_foreground = 0.2  # transparency between 0-1
+    alpha_background = 0.5  # transparency between 0-1
+    overlay_foreground_cmap = "Wistia"  # yellow-forward colormap for EBSD overlay
+    overlay_background_cmap = "cool"  # cyan-forward colormap for SEMCL overlay
     show_image_outline = True  # set to False to hide the orange rectangle showing the segment bounds on the overlay
     include_axes = False
     figure_dpi = 300
@@ -69,6 +71,10 @@ def main() -> None:
         str(alpha_foreground),
         "--overlay_background_alpha",
         str(alpha_background),
+        "--overlay_foreground_cmap",
+        overlay_foreground_cmap,
+        "--overlay_background_cmap",
+        overlay_background_cmap,
         "--figure_dpi",
         str(figure_dpi),
     ]
@@ -104,4 +110,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
