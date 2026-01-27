@@ -141,6 +141,33 @@ def __main__(args=None):
             help="Matplotlib colormap name for the EBSD foreground on the overlay image.",
         )
         parser.add_argument(
+            "--overlay_mask_threshold",
+            type=float,
+            default=None,
+            help=(
+                "Mask pixels at or below this threshold in both overlay layers "
+                "to avoid coloring binary background pixels. Use 0 to hide zeros."
+            ),
+        )
+        parser.add_argument(
+            "--overlay_background_color_min",
+            type=float,
+            default=None,
+            help=(
+                "Minimum normalized mean intensity (0-1) required to keep the "
+                "background overlay colormap. Darker images fall back to grayscale."
+            ),
+        )
+        parser.add_argument(
+            "--overlay_foreground_color_min",
+            type=float,
+            default=None,
+            help=(
+                "Minimum normalized mean intensity (0-1) required to keep the "
+                "foreground overlay colormap. Darker images fall back to grayscale."
+            ),
+        )
+        parser.add_argument(
             "--overlay_segment_outline",
             action="store_true",
             help=(
@@ -215,10 +242,50 @@ def __main__(args=None):
                 )
             ) from exc
 
+    def _validate_color_min(value, label):
+        if value is None:
+            return None
+        if not 0.0 <= value <= 1.0:
+            raise ValueError("{label} must be between 0 and 1 inclusive.".format(label=label))
+        return float(value)
+
+    def _copy_cmap(cmap):
+        if hasattr(cmap, "copy"):
+            return cmap.copy()
+        return cm.get_cmap(cmap.name)
+
+    def _normalized_mean(image):
+        max_val = float(np.max(image))
+        if max_val == 0.0:
+            return 0.0
+        return float(np.mean(image)) / max_val
+
+    def _maybe_use_gray(cmap, image, min_mean):
+        if min_mean is None:
+            return cmap
+        if _normalized_mean(image) <= min_mean:
+            return cm.get_cmap("gray")
+        return cmap
+
+    def _apply_overlay_mask(image, threshold, cmap):
+        if threshold is None:
+            return image, cmap
+        masked = np.ma.masked_where(image <= threshold, image)
+        cmap = _copy_cmap(cmap)
+        cmap.set_bad(color=(0.0, 0.0, 0.0, 0.0))
+        return masked, cmap
+
     background_alpha = _validate_alpha(args.overlay_background_alpha, "overlay_background_alpha")
     foreground_alpha = _validate_alpha(args.overlay_foreground_alpha, "overlay_foreground_alpha")
     background_cmap = _resolve_cmap(args.overlay_background_cmap, "overlay_background_cmap")
     foreground_cmap = _resolve_cmap(args.overlay_foreground_cmap, "overlay_foreground_cmap")
+    overlay_mask_threshold = args.overlay_mask_threshold
+    background_color_min = _validate_color_min(
+        args.overlay_background_color_min, "overlay_background_color_min"
+    )
+    foreground_color_min = _validate_color_min(
+        args.overlay_foreground_color_min, "overlay_foreground_color_min"
+    )
 
     best_score = -1
     best_val, best_segment = None, None
@@ -362,8 +429,26 @@ def __main__(args=None):
     # Plot results
     out_image = os.path.join(args.out_dir, "overlap.align.{}.png".format(args.id_xp))
     fig = plt.figure(figsize=(15, 8))
-    plt.imshow(best_segment, interpolation='nearest', cmap=background_cmap, alpha=background_alpha)
-    plt.imshow(ebsd, interpolation='nearest', cmap=foreground_cmap, alpha=foreground_alpha)
+    background_cmap = _maybe_use_gray(background_cmap, best_segment, background_color_min)
+    foreground_cmap = _maybe_use_gray(foreground_cmap, ebsd, foreground_color_min)
+    background_overlay, background_cmap = _apply_overlay_mask(
+        best_segment, overlay_mask_threshold, background_cmap
+    )
+    foreground_overlay, foreground_cmap = _apply_overlay_mask(
+        ebsd, overlay_mask_threshold, foreground_cmap
+    )
+    plt.imshow(
+        background_overlay,
+        interpolation='nearest',
+        cmap=background_cmap,
+        alpha=background_alpha,
+    )
+    plt.imshow(
+        foreground_overlay,
+        interpolation='nearest',
+        cmap=foreground_cmap,
+        alpha=foreground_alpha,
+    )
     if getattr(args, "overlay_segment_outline", False):
         ax = plt.gca()
         # Track the transformed bounds of the original segment canvas by
