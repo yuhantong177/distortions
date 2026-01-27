@@ -8,7 +8,7 @@
 semcl_pixel_size = (30 / 2056) * (1617 / 1617)
 
 # EBSD pixel size (scaling from image dimensions)
-ebsd_pixel_size = (5 / 1046) * (4180 / 1125)
+ebsd_pixel_size = (5 / 1046) * (4180 / 490)
 
 # --------------------------------------------------
 # Area calculations

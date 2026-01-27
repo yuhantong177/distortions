@@ -28,23 +28,23 @@ def main() -> None:
 #     seg_ref_path = repo_root / "data/RV/binary_ebsd_halfstone_floyd_maskout_black_compress.png" # switched between "seg" and "ebsd" 
 #     ebsd_ref_path = repo_root / "data/RV/binary_semcl_halfstone_floyd_cropped_compress.png"# switched between "seg" and "ebsd"
 # =============================================================================
-    seg_ref_path = repo_root / "data/RV/EBSD raw subset 1 maxentropy.png" # switched between "seg" and "ebsd" 
+    seg_ref_path = repo_root / "data/RV/EBSD raw subset 5 maxentropy.png" # switched between "seg" and "ebsd" 
     ebsd_ref_path = repo_root / "data/RV/SEMCL cropped for intensity analysis maxentropy.png"# switched between "seg" and "ebsd"
 # =============================================================================
 #     seg_ref_path = r"C:\Users\yuhan\Box\ChoyLab\Group members\Andrew\EBSD help Ricardo\dark spot analysis EPMA SEMCL\epma_binary_compress.png"
 #     ebsd_ref_path = r"C:\Users\yuhan\Box\ChoyLab\Group members\Andrew\EBSD help Ricardo\dark spot analysis EPMA SEMCL\semcl_nathans_mod_ML_results_imagej_modified-1 compress.png"
 # =============================================================================
-    config_path = repo_root / "conf/RV.align1.conf"
+    config_path = repo_root / "conf/RV.align5.conf"
     align_dir = repo_root / "data/RV/segment.align"
     out_dir = repo_root / "data/RV/out"    
     xp_id = 0
-    alpha_foreground = 1  # transparency between 0-1
-    alpha_background = 1  # transparency between 0-1
-    overlay_foreground_cmap = "Wistia"  # yellow-forward colormap for EBSD overlay
-    overlay_background_cmap = "cool"  # cyan-forward colormap for SEMCL overlay
+    alpha_foreground = 0.9  # transparency between 0-1
+    alpha_background = 0.5  # transparency between 0-1
+    overlay_foreground_cmap = "OrRd"  # yellow-forward colormap for EBSD overlay
+    overlay_background_cmap = "gray"  # cyan-forward colormap for SEMCL overlay
     overlay_mask_threshold = 0  # mask <= threshold so binary zeros stay transparent
-    overlay_background_color_min = 0.05  # fallback to gray if the SEMCL image is very dark
-    overlay_foreground_color_min = 0.05  # fallback to gray if the EBSD image is very dark
+    overlay_background_color_min = 0  # fallback to gray if the SEMCL image is very dark
+    overlay_foreground_color_min = 0  # fallback to gray if the EBSD image is very dark
     show_image_outline = True  # set to False to hide the orange rectangle showing the segment bounds on the overlay
     include_axes = False
     figure_dpi = 300
