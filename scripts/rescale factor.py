@@ -5,10 +5,10 @@
 # --------------------------------------------------
 
 # SEMCL pixel size (scaling from image dimensions)
-semcl_pixel_size = (30 / 2056) * (1617 / 341)
+semcl_pixel_size = (30 / 2056) * (1617 / 1617)
 
 # EBSD pixel size (scaling from image dimensions)
-ebsd_pixel_size = (5 / 1046) * (4180 / 808)
+ebsd_pixel_size = (5 / 1046) * (4180 / 1125)
 
 # --------------------------------------------------
 # Area calculations
@@ -16,7 +16,7 @@ ebsd_pixel_size = (5 / 1046) * (4180 / 808)
 
 # Number of pixels in each region
 semcl_pixel_count = 8553
-ebsd_pixel_count = 251 * 198
+ebsd_pixel_count = 506 * 541
 
 # Total area estimates
 semcl_area = semcl_pixel_size**2 * semcl_pixel_count

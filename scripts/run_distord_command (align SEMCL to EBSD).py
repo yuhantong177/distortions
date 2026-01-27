@@ -31,7 +31,7 @@ def main() -> None:
 #     config_path = repo_root / "conf/AM718.align.conf"
 # =============================================================================
     seg_ref_path = repo_root / "data/RV/segment.align/segment.align.0.png"
-    ebsd_ref_path = r"C:\Users\yuhan\Box\ChoyLab\Group members\Andrew\EBSD help Ricardo\semcl_nathans_mod_ML_results_imagej_modified-1 compress.png"
+    ebsd_ref_path = r"C:\Users\yuhan\Box\ChoyLab\Group members\Andrew\EBSD help Ricardo\dark spot analysis EPMA SEMCL\semcl_nathans_mod_ML_results_imagej_modified-1 compress.png"
     # Set to ``None`` if you do not have ANG metadata and only need the PNG outputs.
     ang_ref_path = None
     out_dir = repo_root / "data/RV/out"
@@ -40,11 +40,11 @@ def main() -> None:
     # we are working with when editing the script.
     config_path = repo_root / "conf/RV.align_epma.conf"
     xp_id = 0
-    mesh_step = 45
+    mesh_step = 55
     mesh_std = 5
     num_sampling = 2000
     polynom = 3
-    show_image_outline = True  # set to True to draw the orange rectangle showing the segment bounds on the overlay
+    show_image_outline = False  # set to True to draw the orange rectangle showing the segment bounds on the overlay
     include_axes = False
     figure_dpi = 300
 
